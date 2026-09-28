@@ -2016,7 +2016,7 @@ select:focus{
   class="see-more-btn"
   onclick="openLinksPage()">
   <span>See More</span>
-  <span class="see-more-arrow">→</span>
+  <span class="see-more-arrow"></span>
 </button>
 
 
@@ -2536,7 +2536,7 @@ select:focus{
   class="back-btn"
   onclick="goDashboard()">
 
-  <span class="back-arrow" aria-hidden="true">←</span>
+  <span class="back-arrow" aria-hidden="true"></span>
   <span>Dashboard</span>
 
 </button>
@@ -2642,14 +2642,10 @@ select:focus{
   class="page-view"
   id="detailsPage">
 
-  <button
-    type="button"
-    class="back-btn"
-    onclick="openLinksPage()">
-
-     Payment Links
-
-  </button>
+ <button type="button" class="back-btn" onclick="goBack()">
+  <span class="back-arrow" aria-hidden="true">←</span>
+  <span>Payment Links</span>
+</button>
 
 
   <div
