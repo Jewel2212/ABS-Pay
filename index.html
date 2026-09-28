@@ -2080,6 +2080,11 @@ select:focus{
 
 </div>
 
+function showPaymentStatus(message) {
+  const box = document.getElementById("txResult");
+  box.style.display = "block";
+  box.textContent = message;
+}
 
 <!-- PAYMENT MODAL -->
 
@@ -4223,315 +4228,168 @@ async function verifyTokenContract(
    PAYMENT
 ========================================================= */
 
-async function payFromCheckout(){
+async function payFromCheckout() {
+  const payButton = document.getElementById("payButton");
 
-  if(!currentPayment){
+  if (payButton.disabled) return;
 
-    showNotice(
-      "No payment request selected."
-    );
-
+  if (!currentPayment) {
+    showPaymentStatus("Error: No payment request selected.");
     return;
-
   }
 
-
-  if(
-    !validateLoadedPayment(
-      currentPayment
-    )
-  ){
-
-    showNotice(
-      "This payment request is invalid or expired."
-    );
-
+  if (!validateLoadedPayment(currentPayment)) {
+    showPaymentStatus("Error: Invalid or expired payment request.");
     return;
-
   }
 
-
-  if(!window.ethereum){
-
-    showNotice(
-      "Open ABS Pay in a compatible EVM wallet."
+  if (!window.ethereum) {
+    showPaymentStatus(
+      "Error: No compatible wallet detected. Open this page inside MetaMask."
     );
-
     return;
-
   }
 
+  payButton.disabled = true;
+  payButton.style.opacity = ".6";
+  payButton.textContent = "Connecting...";
 
-  const payButton =
-    document.getElementById(
-      "payButton"
-    );
+  try {
+    showPaymentStatus("Step 1/6: Connecting to wallet...");
 
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    });
 
-  try{
-
-    payButton.disabled =
-      true;
-
-    payButton.style.opacity =
-      ".6";
-
-
-    const accounts =
-      await window.ethereum.request({
-
-        method:
-          "eth_requestAccounts"
-
-      });
-
-
-    if(
-      !accounts ||
-      !accounts[0]
-    ){
-
-      throw new Error(
-        "Wallet connection was not completed."
-      );
-
+    if (!accounts || !accounts[0]) {
+      throw new Error("Wallet connection was not completed.");
     }
 
-
-    showNotice(
-      "Switching wallet to Arc..."
-    );
-
+    showPaymentStatus("Step 2/6: Switching to Arc Mainnet...");
 
     await switchToArc();
 
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const network = await provider.getNetwork();
 
-    const provider =
-      new ethers.BrowserProvider(
-        window.ethereum
-      );
-
-
-    await verifyTokenContract(
-      provider
-    );
-
-
-    const signer =
-      await provider.getSigner();
-
-
-    const sender =
-      await signer.getAddress();
-
-
-    const amount =
-      ethers.parseUnits(
-        String(
-          currentPayment.amount
-        ),
-        ARC_CONFIG.tokenDecimals
-      );
-
-
-    const tokenContract =
-      new ethers.Contract(
-
-        ARC_CONFIG.tokenAddress,
-
-        [
-          "function transfer(address to,uint256 amount) returns (bool)",
-          "function balanceOf(address account) view returns (uint256)"
-        ],
-
-        signer
-
-      );
-
-
-    const balance =
-      await tokenContract.balanceOf(
-        sender
-      );
-
-
-    if(balance < amount){
-
+    if (Number(network.chainId) !== ARC_CONFIG.chainIdNumber) {
       throw new Error(
-        "Insufficient USDC balance."
+        "Wrong network. Expected Arc (5042), received " +
+        network.chainId.toString()
       );
-
     }
 
+    showPaymentStatus("Step 3/6: Verifying USDC contract...");
 
-    showNotice(
-      "Confirm the USDC transaction in your wallet."
+    await verifyTokenContract(provider);
+
+    const signer = await provider.getSigner();
+    const sender = await signer.getAddress();
+
+    showPaymentStatus(
+      "Step 4/6: Checking USDC balance...\nWallet: " +
+      shortAddress(sender)
     );
 
-
-    const tx =
-      await tokenContract.transfer(
-        currentPayment.wallet,
-        amount
-      );
-
-
-    showNotice(
-      "Transaction submitted. Waiting for confirmation..."
+    const amount = ethers.parseUnits(
+      String(currentPayment.amount),
+      ARC_CONFIG.tokenDecimals
     );
 
+    const tokenContract = new ethers.Contract(
+      ARC_CONFIG.tokenAddress,
+      [
+        "function transfer(address to,uint256 amount) returns (bool)",
+        "function balanceOf(address account) view returns (uint256)"
+      ],
+      signer
+    );
 
-    const receipt =
-      await tx.wait();
+    const balance = await tokenContract.balanceOf(sender);
 
-
-    if(
-      !receipt ||
-      receipt.status !== 1
-    ){
-
-      throw new Error(
-        "The blockchain transaction was not successful."
-      );
-
+    if (balance < amount) {
+      throw new Error("Insufficient USDC balance.");
     }
 
+    showPaymentStatus(
+      "Step 5/6: Requesting transaction approval in MetaMask...\n\n" +
+      "Amount: " + money(currentPayment.amount) + " USDC\n" +
+      "Recipient: " + currentPayment.wallet
+    );
 
-    const explorerURL =
-      ARC_CONFIG.explorer +
-      "/tx/" +
-      tx.hash;
+    payButton.textContent = "Check MetaMask...";
 
+    const tx = await tokenContract.transfer(
+      currentPayment.wallet,
+      amount
+    );
 
-    const txResult =
-      document.getElementById(
-        "txResult"
-      );
+    showPaymentStatus(
+      "Transaction submitted. Waiting for confirmation...\n\n" +
+      tx.hash
+    );
 
+    payButton.textContent = "Waiting for confirmation...";
 
-    txResult.style.display =
-      "block";
+    const receipt = await tx.wait();
 
+    if (!receipt || receipt.status !== 1) {
+      throw new Error("Blockchain transaction failed.");
+    }
+
+    const explorerURL = ARC_CONFIG.explorer + "/tx/" + tx.hash;
+
+    const txResult = document.getElementById("txResult");
+    txResult.style.display = "block";
 
     txResult.innerHTML = `
-
-      <strong>
-        Payment confirmed successfully.
-      </strong>
-
+      <strong>Payment confirmed successfully.</strong>
       <br><br>
-
-      ${escapeHTML(
-        money(currentPayment.amount)
-      )}
-      USDC sent to
-      ${escapeHTML(
-        shortAddress(
-          currentPayment.wallet
-        )
-      )}
-
+      ${escapeHTML(money(currentPayment.amount))} USDC sent to
+      ${escapeHTML(shortAddress(currentPayment.wallet))}
       <br><br>
-
-      <a
-        href="${escapeHTML(explorerURL)}"
-        target="_blank"
-        rel="noopener noreferrer">
-
+      <a href="${escapeHTML(explorerURL)}"
+         target="_blank"
+         rel="noopener noreferrer">
         View transaction on Arc Explorer
-
       </a>
-
     `;
 
-
-    showNotice(
-      "Payment confirmed on Arc."
+    const localItem = paymentLinks.find(
+      item => item.id === currentPayment.id
     );
 
-
-    const localItem =
-      paymentLinks.find(
-        function(item){
-          return item.id ===
-            currentPayment.id;
-        }
-      );
-
-
-    if(localItem){
-
-      localItem.status =
-        "Completed";
-
-      localItem.txHash =
-        tx.hash;
-
-      localItem.completedAt =
-        Date.now();
+    if (localItem) {
+      localItem.status = "Completed";
+      localItem.txHash = tx.hash;
+      localItem.completedAt = Date.now();
 
       localStorage.setItem(
         "ABS_PAYMENT_LINKS_ARC_V2",
-        JSON.stringify(
-          paymentLinks
-        )
+        JSON.stringify(paymentLinks)
       );
 
       renderLinks();
-
     }
 
+    payButton.textContent = "Payment Confirmed";
 
-    payButton.innerHTML =
-      " Payment Confirmed";
+  } catch (error) {
+    console.error("ABS Pay payment error:", error);
 
+    const message =
+      error?.shortMessage ||
+      error?.reason ||
+      error?.message ||
+      String(error);
 
+    showPaymentStatus("Payment failed:\n\n" + message);
+
+    payButton.disabled = false;
+    payButton.style.opacity = "1";
+    payButton.textContent = "Try Payment Again";
   }
-
-  catch(error){
-
-    console.error(
-      "ABS Pay payment error:",
-      error
-    );
-
-
-    if(
-      error &&
-      (
-        error.code === 4001 ||
-        error.code === "ACTION_REJECTED"
-      )
-    ){
-
-      showNotice(
-        "Transaction was rejected in the wallet."
-      );
-
-    }
-
-    else{
-
-      showNotice(
-        error?.shortMessage ||
-        error?.reason ||
-        error?.message ||
-        "Transaction could not be completed."
-      );
-
-    }
-
-
-    payButton.disabled =
-      false;
-
-    payButton.style.opacity =
-      "1";
-
-  }
-
 }
-
 
 /* =========================================================
    PUBLIC PAYMENT
@@ -5361,4 +5219,4 @@ if(window.ethereum){
 </script>
 
 </body>
-  </html>
+</html>
