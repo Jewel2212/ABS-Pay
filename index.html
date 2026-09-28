@@ -2238,10 +2238,7 @@ const ARC_CONFIG = {
 
   /*
     Arc native USDC uses 18 native decimals.
-    This payment flow uses the native asset directly
-    through eth_sendTransaction.
-
-    No ERC-20 token contract is used here.
+    Payment is made with a native-value transaction.
   */
 
   nativeDecimals:
@@ -2391,11 +2388,9 @@ function showNotice(message){
   notice.textContent =
     String(message || "");
 
-
   clearTimeout(
     window.absNoticeTimer
   );
-
 
   window.absNoticeTimer =
     setTimeout(
@@ -2410,6 +2405,10 @@ function showNotice(message){
 
 }
 
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
 
 function showPaymentStatus(message){
 
@@ -2450,7 +2449,6 @@ function showPaymentSuccess(
     ARC_CONFIG.explorer +
     "/tx/" +
     txHash;
-
 
   box.style.display =
     "block";
@@ -2555,13 +2553,16 @@ function decodePayment(value){
 
     let base64 =
       String(value || "")
+        .trim()
         .replace(/-/g,"+")
         .replace(/_/g,"/");
 
     while(
       base64.length % 4
     ){
+
       base64 += "=";
+
     }
 
     const binary =
@@ -2571,7 +2572,9 @@ function decodePayment(value){
       Uint8Array.from(
         binary,
         function(char){
+
           return char.charCodeAt(0);
+
         }
       );
 
@@ -2584,9 +2587,237 @@ function decodePayment(value){
 
   catch(error){
 
+    console.error(
+      "Payment decode error:",
+      error
+    );
+
     return null;
 
   }
+
+}
+
+
+/* =========================================================
+   NORMALIZE LOADED PAYMENT
+   Makes old/new payload fields compatible.
+========================================================= */
+
+function normalizeLoadedPayment(payment){
+
+  if(
+    !payment ||
+    typeof payment !== "object"
+  ){
+
+    return null;
+
+  }
+
+
+  const normalized = {
+    ...payment
+  };
+
+
+  /*
+    Product field compatibility.
+  */
+
+  if(
+    !normalized.product &&
+    normalized.productName
+  ){
+
+    normalized.product =
+      normalized.productName;
+
+  }
+
+
+  if(
+    !normalized.product &&
+    normalized.name
+  ){
+
+    normalized.product =
+      normalized.name;
+
+  }
+
+
+  /*
+    Amount field compatibility.
+  */
+
+  if(
+    !normalized.amount &&
+    normalized.price
+  ){
+
+    normalized.amount =
+      normalized.price;
+
+  }
+
+
+  /*
+    Wallet / recipient compatibility.
+  */
+
+  if(
+    !normalized.wallet &&
+    normalized.recipient
+  ){
+
+    normalized.wallet =
+      normalized.recipient;
+
+  }
+
+
+  if(
+    !normalized.wallet &&
+    normalized.sellerWallet
+  ){
+
+    normalized.wallet =
+      normalized.sellerWallet;
+
+  }
+
+
+  /*
+    Network compatibility.
+  */
+
+  if(
+    !normalized.network
+  ){
+
+    normalized.network =
+      "Arc";
+
+  }
+
+
+  if(
+    !normalized.chainId
+  ){
+
+    normalized.chainId =
+      ARC_CONFIG.chainIdNumber;
+
+  }
+
+
+  if(
+    !normalized.asset
+  ){
+
+    normalized.asset =
+      "USDC";
+
+  }
+
+
+  /*
+    Native payment compatibility.
+  */
+
+  if(
+    !normalized.tokenType
+  ){
+
+    /*
+      New links are native Arc USDC.
+      If an old payload explicitly contains
+      an ERC-20 token address, do not silently
+      convert it into native payment.
+    */
+
+    if(!normalized.token){
+
+      normalized.tokenType =
+        "native";
+
+    }
+
+  }
+
+
+  /*
+    Images compatibility.
+  */
+
+  if(
+    !Array.isArray(
+      normalized.images
+    )
+  ){
+
+    normalized.images =
+      [];
+
+  }
+
+
+  if(
+    !normalized.images.length &&
+    normalized.image
+  ){
+
+    normalized.images = [
+      normalized.image
+    ];
+
+  }
+
+
+  /*
+    Videos compatibility.
+  */
+
+  if(
+    !Array.isArray(
+      normalized.videos
+    )
+  ){
+
+    normalized.videos =
+      [];
+
+  }
+
+
+  if(
+    !normalized.videos.length &&
+    normalized.video
+  ){
+
+    normalized.videos = [
+      normalized.video
+    ];
+
+  }
+
+
+  /*
+    Quantity compatibility.
+  */
+
+  if(
+    !normalized.quantity
+  ){
+
+    normalized.quantity =
+      1;
+
+  }
+
+
+  return normalized;
 
 }
 
@@ -3438,6 +3669,136 @@ function validatePaymentData(data){
 
 
 /* =========================================================
+   LOADED PAYMENT VALIDATION
+========================================================= */
+
+function validateLoadedPayment(
+  payment
+){
+
+  const normalized =
+    normalizeLoadedPayment(
+      payment
+    );
+
+
+  if(!normalized){
+    return false;
+  }
+
+
+  if(
+    normalized.version !== undefined &&
+    normalized.version !== 3 &&
+    normalized.version !== 2
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    !normalized.product ||
+    typeof normalized.product !==
+    "string"
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    !normalized.amount ||
+    !normalizeAmount(
+      normalized.amount
+    )
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    String(
+      normalized.network
+    ).toLowerCase() !==
+    "arc"
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    Number(normalized.chainId) !==
+    ARC_CONFIG.chainIdNumber
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    String(
+      normalized.asset
+    ).toUpperCase() !==
+    "USDC"
+  ){
+
+    return false;
+
+  }
+
+
+  /*
+    Old links containing an explicit token
+    address are not used by the native payment flow.
+  */
+
+  if(
+    normalized.token &&
+    normalized.tokenType !==
+    "native"
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    !isValidEVMAddress(
+      normalized.wallet
+    )
+  ){
+
+    return false;
+
+  }
+
+
+  if(
+    normalized.expiresAt &&
+    Date.now() >
+    Number(normalized.expiresAt)
+  ){
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
    UPLOAD MEDIA
 ========================================================= */
 
@@ -3719,7 +4080,16 @@ async function createPaymentLink(){
       product:
         data.product,
 
+      productName:
+        data.product,
+
+      name:
+        data.product,
+
       amount:
+        data.amount,
+
+      price:
         data.amount,
 
       network:
@@ -3731,15 +4101,16 @@ async function createPaymentLink(){
       asset:
         "USDC",
 
-      /*
-        Native Arc USDC.
-        No ERC-20 token address is stored.
-      */
-
       tokenType:
         "native",
 
       wallet:
+        data.wallet,
+
+      sellerWallet:
+        data.wallet,
+
+      recipient:
         data.wallet,
 
       images:
@@ -3898,113 +4269,156 @@ function buildPaymentURL(
 
 
 /* =========================================================
-   VALIDATE LOADED PAYMENT
+   RENDER PUBLIC PAYMENT
+   IMPORTANT:
+   Render product information first.
+   Validation happens after the visual data is available.
 ========================================================= */
 
-function validateLoadedPayment(
+function renderPublicPayment(
   payment
 ){
 
-  if(!payment){
+  const normalized =
+    normalizeLoadedPayment(
+      payment
+    );
+
+
+  if(!normalized){
     return false;
   }
 
 
-  if(
-    payment.version !== 3 &&
-    payment.version !== 2
-  ){
-    return false;
-  }
+  currentPayment =
+    normalized;
+
+
+  const checkout =
+    document.getElementById(
+      "publicCheckout"
+    );
+
+
+  checkout.classList.add(
+    "show"
+  );
+
+
+  /*
+    Product
+  */
+
+  document.getElementById(
+    "publicProduct"
+  ).textContent =
+    normalized.product ||
+    "Payment";
+
+
+  /*
+    Price
+  */
+
+  document.getElementById(
+    "publicPrice"
+  ).textContent =
+    money(
+      normalized.amount
+    ) +
+    " USDC";
+
+
+  /*
+    Description
+  */
+
+  document.getElementById(
+    "publicDescription"
+  ).textContent =
+    normalized.description ||
+    "";
+
+
+  /*
+    Seller
+  */
+
+  document.getElementById(
+    "publicSeller"
+  ).textContent =
+    normalized.wallet
+      ? shortAddress(
+          normalized.wallet
+        )
+      : "Not available";
+
+
+  /*
+    Network
+  */
+
+  document.getElementById(
+    "publicNetwork"
+  ).textContent =
+    "USDC payment on Arc Mainnet";
+
+
+  /*
+    Product URL
+  */
+
+  const productLink =
+    document.getElementById(
+      "publicProductLink"
+    );
+
+
+  productLink.style.display =
+    "none";
+
+  productLink.removeAttribute(
+    "href"
+  );
 
 
   if(
-    !payment.product ||
-    typeof payment.product !==
-    "string"
-  ){
-    return false;
-  }
-
-
-  if(
-    !payment.amount ||
-    !normalizeAmount(
-      payment.amount
+    normalized.productUrl &&
+    /^https?:\/\//i.test(
+      String(
+        normalized.productUrl
+      )
     )
   ){
-    return false;
-  }
 
+    productLink.href =
+      normalized.productUrl;
 
-  if(
-    payment.network !==
-    "Arc"
-  ){
-    return false;
-  }
+    productLink.style.display =
+      "block";
 
-
-  if(
-    Number(payment.chainId) !==
-    ARC_CONFIG.chainIdNumber
-  ){
-    return false;
-  }
-
-
-  if(
-    payment.asset !==
-    "USDC"
-  ){
-    return false;
   }
 
 
   /*
-    New links use native USDC.
-    Old v2 links that contain an ERC-20
-    token field are rejected intentionally
-    so they cannot call an unverified contract.
+    Media
   */
 
-  if(
-    payment.version === 2 &&
-    payment.token
-  ){
-
-    return false;
-
-  }
+  loadPublicMedia(
+    normalized
+  );
 
 
-  if(
-    payment.version === 3 &&
-    payment.tokenType !==
-    "native"
-  ){
+  /*
+    Browser title
+  */
 
-    return false;
-
-  }
-
-
-  if(
-    !isValidEVMAddress(
-      payment.wallet
-    )
-  ){
-    return false;
-  }
-
-
-  if(
-    payment.expiresAt &&
-    Date.now() >
-    Number(payment.expiresAt)
-  ){
-    return false;
-  }
+  document.title =
+    (
+      normalized.product ||
+      "Payment"
+    ) +
+    " — ABS Pay";
 
 
   return true;
@@ -4013,203 +4427,376 @@ function validateLoadedPayment(
 
 
 /* =========================================================
-   RENDER LINKS
+   LOAD PUBLIC PAYMENT
 ========================================================= */
 
-function renderLinks(){
+function loadPublicPayment(){
 
-  const container =
-    document.getElementById(
-      "paymentLinks"
+  const params =
+    new URLSearchParams(
+      window.location.search
     );
 
 
-  if(!paymentLinks.length){
+  const encoded =
+    params.get(
+      "pay"
+    );
 
-    container.innerHTML =
-      '<div class="empty">No payment links created yet.</div>';
 
-    updateStats();
+  if(!encoded){
+    return;
+  }
+
+
+  const payment =
+    decodePayment(
+      encoded
+    );
+
+
+  /*
+    NEW IMPORTANT BEHAVIOR:
+    Try to render the decoded product information
+    BEFORE rejecting the payment request.
+  */
+
+  const rendered =
+    renderPublicPayment(
+      payment
+    );
+
+
+  if(!rendered){
+
+    showNotice(
+      "Unable to read this payment link."
+    );
 
     return;
 
   }
 
 
-  container.innerHTML =
-    paymentLinks
-      .map(
-        function(item){
+  /*
+    Now perform security/payment validation.
+  */
 
-          const expired =
-            item.expiresAt &&
-            Date.now() >
-            Number(item.expiresAt);
-
-
-          const status =
-            item.status ===
-            "Completed"
-              ? "Completed"
-              : expired
-                ? "Expired"
-                : "Ready";
+  const valid =
+    validateLoadedPayment(
+      payment
+    );
 
 
-          return `
+  if(!valid){
 
-          <div class="link-item">
-
-            <div class="link-top">
-
-              <div>
-
-                <div class="link-product">
-
-                  ${escapeHTML(
-                    item.product
-                  )}
-
-                </div>
-
-                <div class="link-meta">
-
-                  ${escapeHTML(
-                    item.type ||
-                    "Payment"
-                  )}
-
-                  •
-                  ${escapeHTML(
-                    money(item.amount)
-                  )}
-                  USDC
-                  • Arc
-
-                  <br>
-
-                  Media:
-                  ${(
-                    (item.images || []).length +
-                    (item.videos || []).length
-                  )}
-
-                  <br>
-
-                  Seller:
-                  ${escapeHTML(
-                    shortAddress(
-                      item.wallet
-                    )
-                  )}
-
-                  <br>
-
-                  ${escapeHTML(
-                    item.url || ""
-                  )}
-
-                </div>
-
-              </div>
-
-              <span class="status">
-                ${status}
-              </span>
-
-            </div>
+    const button =
+      document.getElementById(
+        "publicBuyButton"
+      );
 
 
-            <div class="link-actions">
+    button.disabled =
+      true;
 
-              <button
-                class="small-btn"
-                type="button"
-                onclick='copyLink(${JSON.stringify(item.url || "")})'>
-
-                Copy
-
-              </button>
+    button.textContent =
+      "Payment Unavailable";
 
 
-              <button
-                class="small-btn"
-                type="button"
-                onclick='openStoredPayment(${JSON.stringify(item.id)})'>
-
-                Open
-
-              </button>
+    showPublicPaymentWarning(
+      "This payment request is invalid, expired or unsupported. Product information is shown, but payment is disabled."
+    );
 
 
-              <button
-                class="small-btn"
-                type="button"
-                onclick='shareURL(${JSON.stringify(item.url || "")})'>
+    return;
 
-                Share
+  }
 
-              </button>
 
-            </div>
+  const button =
+    document.getElementById(
+      "publicBuyButton"
+    );
 
-          </div>
 
-          `;
+  button.disabled =
+    false;
 
-        }
-      )
-      .join("");
-
-  updateStats();
+  button.textContent =
+    "Connect Wallet & Pay";
 
 }
 
 
 /* =========================================================
-   OPEN STORED PAYMENT
+   PUBLIC PAYMENT WARNING
 ========================================================= */
 
-function openStoredPayment(id){
+function showPublicPaymentWarning(
+  message
+){
 
-  const item =
-    paymentLinks.find(
-      function(x){
+  const checkout =
+    document.getElementById(
+      "publicCheckout"
+    );
 
-        return x.id ===
-          id;
+
+  if(!checkout){
+    return;
+  }
+
+
+  let warning =
+    document.getElementById(
+      "publicPaymentWarning"
+    );
+
+
+  if(!warning){
+
+    warning =
+      document.createElement(
+        "div"
+      );
+
+    warning.id =
+      "publicPaymentWarning";
+
+    warning.className =
+      "notice";
+
+    warning.style.display =
+      "block";
+
+    const body =
+      checkout.querySelector(
+        ".public-body"
+      );
+
+    const button =
+      document.getElementById(
+        "publicBuyButton"
+      );
+
+    body.insertBefore(
+      warning,
+      button
+    );
+
+  }
+
+
+  warning.textContent =
+    message;
+
+}
+
+
+/* =========================================================
+   PUBLIC MEDIA
+========================================================= */
+
+function loadPublicMedia(
+  payment
+){
+
+  const box =
+    document.getElementById(
+      "publicMedia"
+    );
+
+
+  box.innerHTML =
+    "";
+
+  box.style.display =
+    "none";
+
+
+  let images =
+    Array.isArray(
+      payment.images
+    )
+      ? payment.images
+      : [];
+
+
+  let videos =
+    Array.isArray(
+      payment.videos
+    )
+      ? payment.videos
+      : [];
+
+
+  if(
+    !images.length &&
+    payment.image
+  ){
+
+    images = [
+      payment.image
+    ];
+
+  }
+
+
+  if(
+    !videos.length &&
+    payment.video
+  ){
+
+    videos = [
+      payment.video
+    ];
+
+  }
+
+
+  const total =
+    images.length +
+    videos.length;
+
+
+  if(!total){
+    return;
+  }
+
+
+  const gallery =
+    document.createElement(
+      "div"
+    );
+
+
+  gallery.className =
+    "public-media-gallery";
+
+
+  images.forEach(
+    function(url){
+
+      if(
+        !/^https?:\/\//i.test(
+          String(url || "")
+        )
+      ){
+
+        return;
 
       }
-    );
 
 
-  if(!item){
-
-    showNotice(
-      "Payment link not found."
-    );
-
-    return;
-
-  }
+      const item =
+        document.createElement(
+          "div"
+        );
 
 
-  if(!item.url){
-
-    showNotice(
-      "This payment link has no URL."
-    );
-
-    return;
-
-  }
+      item.className =
+        "public-media-item";
 
 
-  window.open(
-    item.url,
-    "_blank",
-    "noopener,noreferrer"
+      const img =
+        document.createElement(
+          "img"
+        );
+
+
+      img.src =
+        url;
+
+      img.alt =
+        payment.product ||
+        "Product";
+
+
+      img.loading =
+        "lazy";
+
+
+      item.appendChild(
+        img
+      );
+
+
+      gallery.appendChild(
+        item
+      );
+
+    }
   );
+
+
+  videos.forEach(
+    function(url){
+
+      if(
+        !/^https?:\/\//i.test(
+          String(url || "")
+        )
+      ){
+
+        return;
+
+      }
+
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "public-media-item";
+
+
+      const video =
+        document.createElement(
+          "video"
+        );
+
+
+      video.src =
+        url;
+
+      video.controls =
+        true;
+
+      video.playsInline =
+        true;
+
+      video.preload =
+        "metadata";
+
+
+      item.appendChild(
+        video
+      );
+
+
+      gallery.appendChild(
+        item
+      );
+
+    }
+  );
+
+
+  if(
+    gallery.children.length
+  ){
+
+    box.appendChild(
+      gallery
+    );
+
+    box.style.display =
+      "block";
+
+  }
 
 }
 
@@ -4222,20 +4809,39 @@ function openPaymentModal(
   payment
 ){
 
+  const normalized =
+    normalizeLoadedPayment(
+      payment
+    );
+
+
+  if(!normalized){
+
+    showNotice(
+      "Payment request could not be loaded."
+    );
+
+    return;
+
+  }
+
+
   currentPayment =
-    payment;
+    normalized;
 
 
   document.getElementById(
     "modalProduct"
   ).textContent =
-    payment.product;
+    normalized.product;
 
 
   document.getElementById(
     "modalPrice"
   ).textContent =
-    money(payment.amount) +
+    money(
+      normalized.amount
+    ) +
     " USDC";
 
 
@@ -4243,7 +4849,7 @@ function openPaymentModal(
     "modalDetails"
   ).textContent =
     "Arc • Native USDC • Seller: " +
-    payment.wallet +
+    normalized.wallet +
     " • Platform fee: 0 USDC";
 
 
@@ -4544,12 +5150,9 @@ async function getNativeUSDCBalance(
   address
 ){
 
-  const balance =
-    await provider.getBalance(
-      address
-    );
-
-  return balance;
+  return await provider.getBalance(
+    address
+  );
 
 }
 
@@ -4580,6 +5183,12 @@ async function payFromCheckout(){
     return;
 
   }
+
+
+  currentPayment =
+    normalizeLoadedPayment(
+      currentPayment
+    );
 
 
   if(
@@ -4737,12 +5346,6 @@ async function payFromCheckout(){
     );
 
 
-    /*
-      Arc native USDC uses 18 decimals.
-      The amount field accepts up to 6 decimals
-      for normal USDC display precision.
-    */
-
     const amount =
       ethers.parseUnits(
         String(
@@ -4791,13 +5394,6 @@ async function payFromCheckout(){
     payButton.textContent =
       "Check MetaMask...";
 
-
-    /*
-      IMPORTANT:
-      This is a native-value transaction.
-      MetaMask should now show the transaction
-      confirmation window.
-    */
 
     const tx =
       await signer.sendTransaction({
@@ -4975,6 +5571,12 @@ async function buyPublicPayment(){
   }
 
 
+  currentPayment =
+    normalizeLoadedPayment(
+      currentPayment
+    );
+
+
   if(
     !validateLoadedPayment(
       currentPayment
@@ -4998,328 +5600,211 @@ async function buyPublicPayment(){
 
 
 /* =========================================================
-   LOAD PUBLIC PAYMENT
+   RENDER PAYMENT LINKS
 ========================================================= */
 
-function loadPublicPayment(){
+function renderLinks(){
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-
-  const encoded =
-    params.get(
-      "pay"
-    );
-
-
-  if(!encoded){
-    return;
-  }
-
-
-  const payment =
-    decodePayment(
-      encoded
-    );
-
-
-  if(
-    !validateLoadedPayment(
-      payment
-    )
-  ){
-
-    showNotice(
-      "This payment link is invalid, unsupported or expired."
-    );
-
-    return;
-
-  }
-
-
-  currentPayment =
-    payment;
-
-
-  document
-    .getElementById(
-      "publicCheckout"
-    )
-    .classList.add(
-      "show"
-    );
-
-
-  document.getElementById(
-    "publicProduct"
-  ).textContent =
-    payment.product;
-
-
-  document.getElementById(
-    "publicPrice"
-  ).textContent =
-    money(
-      payment.amount
-    ) +
-    " USDC";
-
-
-  document.getElementById(
-    "publicDescription"
-  ).textContent =
-    payment.description ||
-    "";
-
-
-  document.getElementById(
-    "publicSeller"
-  ).textContent =
-    shortAddress(
-      payment.wallet
-    );
-
-
-  document.getElementById(
-    "publicNetwork"
-  ).textContent =
-    "USDC payment on Arc Mainnet";
-
-
-  const productLink =
+  const container =
     document.getElementById(
-      "publicProductLink"
+      "paymentLinks"
     );
 
 
-  if(
-    payment.productUrl &&
-    /^https?:\/\//i.test(
-      payment.productUrl
-    )
-  ){
+  if(!paymentLinks.length){
 
-    productLink.href =
-      payment.productUrl;
+    container.innerHTML =
+      '<div class="empty">No payment links created yet.</div>';
 
-    productLink.style.display =
-      "block";
+    updateStats();
+
+    return;
 
   }
 
 
-  loadPublicMedia(
-    payment
-  );
+  container.innerHTML =
+    paymentLinks
+      .map(
+        function(item){
+
+          const expired =
+            item.expiresAt &&
+            Date.now() >
+            Number(item.expiresAt);
 
 
-  document.title =
-    payment.product +
-    " — ABS Pay";
+          const status =
+            item.status ===
+            "Completed"
+              ? "Completed"
+              : expired
+                ? "Expired"
+                : "Ready";
+
+
+          return `
+
+          <div class="link-item">
+
+            <div class="link-top">
+
+              <div>
+
+                <div class="link-product">
+
+                  ${escapeHTML(
+                    item.product ||
+                    item.productName ||
+                    item.name ||
+                    "Payment"
+                  )}
+
+                </div>
+
+                <div class="link-meta">
+
+                  ${escapeHTML(
+                    item.type ||
+                    "Payment"
+                  )}
+
+                  •
+                  ${escapeHTML(
+                    money(
+                      item.amount ||
+                      item.price
+                    )
+                  )}
+                  USDC
+                  • Arc
+
+                  <br>
+
+                  Media:
+                  ${(
+                    (item.images || []).length +
+                    (item.videos || []).length
+                  )}
+
+                  <br>
+
+                  Seller:
+                  ${escapeHTML(
+                    shortAddress(
+                      item.wallet ||
+                      item.sellerWallet ||
+                      item.recipient
+                    )
+                  )}
+
+                  <br>
+
+                  ${escapeHTML(
+                    item.url || ""
+                  )}
+
+                </div>
+
+              </div>
+
+              <span class="status">
+                ${status}
+              </span>
+
+            </div>
+
+
+            <div class="link-actions">
+
+              <button
+                class="small-btn"
+                type="button"
+                onclick='copyLink(${JSON.stringify(item.url || "")})'>
+
+                Copy
+
+              </button>
+
+
+              <button
+                class="small-btn"
+                type="button"
+                onclick='openStoredPayment(${JSON.stringify(item.id)})'>
+
+                Open
+
+              </button>
+
+
+              <button
+                class="small-btn"
+                type="button"
+                onclick='shareURL(${JSON.stringify(item.url || "")})'>
+
+                Share
+
+              </button>
+
+            </div>
+
+          </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+  updateStats();
 
 }
 
 
 /* =========================================================
-   PUBLIC MEDIA
+   OPEN STORED PAYMENT
 ========================================================= */
 
-function loadPublicMedia(
-  payment
-){
+function openStoredPayment(id){
 
-  const box =
-    document.getElementById(
-      "publicMedia"
+  const item =
+    paymentLinks.find(
+      function(x){
+
+        return x.id ===
+          id;
+
+      }
     );
 
 
-  box.innerHTML =
-    "";
+  if(!item){
 
-  box.style.display =
-    "none";
+    showNotice(
+      "Payment link not found."
+    );
 
-
-  let images =
-    Array.isArray(
-      payment.images
-    )
-      ? payment.images
-      : [];
-
-
-  let videos =
-    Array.isArray(
-      payment.videos
-    )
-      ? payment.videos
-      : [];
-
-
-  if(
-    !images.length &&
-    payment.image
-  ){
-
-    images = [
-      payment.image
-    ];
-
-  }
-
-
-  if(
-    !videos.length &&
-    payment.video
-  ){
-
-    videos = [
-      payment.video
-    ];
-
-  }
-
-
-  const total =
-    images.length +
-    videos.length;
-
-
-  if(!total){
     return;
+
+  }
+
+
+  if(!item.url){
+
+    showNotice(
+      "This payment link has no URL."
+    );
+
+    return;
+
   }
 
 
-  const gallery =
-    document.createElement(
-      "div"
-    );
-
-
-  gallery.className =
-    "public-media-gallery";
-
-
-  images.forEach(
-    function(url){
-
-      if(
-        !/^https?:\/\//i.test(
-          url
-        )
-      ){
-
-        return;
-
-      }
-
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
-        "public-media-item";
-
-
-      const img =
-        document.createElement(
-          "img"
-        );
-
-
-      img.src =
-        url;
-
-      img.alt =
-        payment.product;
-
-
-      item.appendChild(
-        img
-      );
-
-
-      gallery.appendChild(
-        item
-      );
-
-    }
+  window.open(
+    item.url,
+    "_blank",
+    "noopener,noreferrer"
   );
-
-
-  videos.forEach(
-    function(url){
-
-      if(
-        !/^https?:\/\//i.test(
-          url
-        )
-      ){
-
-        return;
-
-      }
-
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-
-      item.className =
-        "public-media-item";
-
-
-      const video =
-        document.createElement(
-          "video"
-        );
-
-
-      video.src =
-        url;
-
-      video.controls =
-        true;
-
-      video.playsInline =
-        true;
-
-
-      item.appendChild(
-        video
-      );
-
-
-      gallery.appendChild(
-        item
-      );
-
-    }
-  );
-
-
-  if(
-    gallery.children.length
-  ){
-
-    box.appendChild(
-      gallery
-    );
-
-    box.style.display =
-      "block";
-
-  }
 
 }
 
@@ -5353,6 +5838,11 @@ async function shareCurrentPreview(){
 
 
 async function shareURL(url){
+
+  if(!url){
+    return;
+  }
+
 
   try{
 
@@ -5685,7 +6175,9 @@ function updateStats(){
         return (
           total +
           Number(
-            item.amount || 0
+            item.amount ||
+            item.price ||
+            0
           )
         );
 
