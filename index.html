@@ -20,6 +20,29 @@ content="ABS Pay — Direct USDC payments on Arc by ABS Vertex Labs.">
 
 <style>
 
+.see-more-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+.see-more-arrow{
+  display:inline-block;
+  font-size:18px;
+  line-height:1;
+  animation:arrowMove 1.2s ease-in-out infinite;
+}
+
+@keyframes arrowMove{
+  0%,100%{
+    transform:translateX(0);
+  }
+  50%{
+    transform:translateX(5px);
+  }
+}
+
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
@@ -1723,6 +1746,25 @@ select:focus{
 
 }
 
+.back-arrow{
+  display:inline-block;
+  font-size:23px;
+  line-height:1;
+  animation:backArrowLive 1s ease-in-out infinite;
+  filter:drop-shadow(0 0 5px rgba(0,245,255,.7));
+}
+
+@keyframes backArrowLive{
+  0%,100%{
+    transform:translateX(0) scale(1);
+    opacity:.75;
+  }
+  50%{
+    transform:translateX(-6px) scale(1.18);
+    opacity:1;
+  }
+}
+
 </style>
 </head>
 
@@ -1913,7 +1955,7 @@ select:focus{
 
   </span>
 
-  <h1>Get Paid. Your Way.</h1>
+  <h1>Create a Payment Link. Get Paid for Your Products or Services.</h1>
 
   <p>
     Create a simple USDC payment link on Arc.
@@ -1970,20 +2012,12 @@ select:focus{
 
 
   <button
-    type="button"
-    class="see-more-btn"
-    onclick="openLinksPage()">
-
-    See More
-
-    <span>→</span>
-
-  </button>
-
-</section>
-
-
-<main class="grid">
+  type="button"
+  class="see-more-btn"
+  onclick="openLinksPage()">
+  <span>See More</span>
+  <span class="see-more-arrow">→</span>
+</button>
 
 
 <!-- =====================================================
@@ -2433,8 +2467,7 @@ select:focus{
       <div class="step-number">3</div>
       <h4 class="step-title">Generate Link</h4>
       <p class="step-text">
-        ABS Pay uploads the media to Supabase
-        Storage and creates a shareable URL.
+        Create a shareable payment link and get paid directly.
       </p>
     </div>
 
@@ -2443,7 +2476,7 @@ select:focus{
       <h4 class="step-title">Share</h4>
       <p class="step-text">
         Send the payment link through your
-        website, social media or messaging app.
+        Website, Social media, Email or Messaging app.
       </p>
     </div>
 
@@ -2499,13 +2532,14 @@ select:focus{
   id="linksPage">
 
   <button
-    type="button"
-    class="back-btn"
-    onclick="goDashboard()">
+  type="button"
+  class="back-btn"
+  onclick="goDashboard()">
 
-    ← Dashboard
+  <span class="back-arrow" aria-hidden="true">←</span>
+  <span>Dashboard</span>
 
-  </button>
+</button>
 
 
   <div class="page-card">
@@ -2613,7 +2647,7 @@ select:focus{
     class="back-btn"
     onclick="openLinksPage()">
 
-    ← Payment Links
+     Payment Links
 
   </button>
 
@@ -2628,7 +2662,7 @@ select:focus{
 
 
 <div class="footer">
-  ABS Vertex Labs • ABS Pay • Arc
+  ABS Pay • A Product Of ABS Vertex Labs
 </div>
 
 </div>
