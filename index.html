@@ -2016,7 +2016,7 @@ select:focus{
   class="see-more-btn"
   onclick="openLinksPage()">
   <span>See More</span>
-  <span class="see-more-arrow"></span>
+  <span class="see-more-arrow">→</span>
 </button>
 
 
@@ -2536,7 +2536,7 @@ select:focus{
   class="back-btn"
   onclick="goDashboard()">
 
-  <span class="back-arrow" aria-hidden="true"></span>
+  <span class="back-arrow" aria-hidden="true">←</span>
   <span>Dashboard</span>
 
 </button>
@@ -7349,6 +7349,47 @@ function renderPaymentDetails(
 /* =========================================================
    DASHBOARD
 ========================================================= */
+
+
+/* =========================================================
+   GO BACK (Details -> Links)
+========================================================= */
+
+function goBack(){
+
+  currentPage =
+    "links";
+
+  document.getElementById(
+    "dashboardView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "linksPage"
+  ).classList.add(
+    "show"
+  );
+
+  document.getElementById(
+    "detailsPage"
+  ).classList.remove(
+    "show"
+  );
+
+
+  renderFullLinks();
+
+
+  window.scrollTo(
+    {
+      top:0,
+      behavior:"smooth"
+    }
+  );
+
+}
+
 
 function goDashboard(){
 
