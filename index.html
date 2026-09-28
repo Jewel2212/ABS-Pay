@@ -55,6 +55,10 @@ button{
   cursor:pointer;
 }
 
+a{
+  color:inherit;
+}
+
 body::before,
 body::after{
   content:"";
@@ -353,7 +357,7 @@ body::after{
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:1fr;
   gap:10px;
   margin-bottom:15px;
 }
@@ -390,6 +394,53 @@ body::after{
   background-clip:text;
   -webkit-text-fill-color:transparent;
   animation:textFlow 4s linear infinite;
+}
+
+.dashboard-links{
+  margin-bottom:15px;
+}
+
+.dashboard-link-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.dashboard-link-title{
+  font-size:13px;
+  font-weight:900;
+}
+
+.dashboard-link-count{
+  color:#fff;
+  opacity:.65;
+  font-size:10px;
+}
+
+.see-more-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  width:100%;
+  border:1px solid #303746;
+  border-radius:13px;
+  padding:12px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,229,255,.08),
+      rgba(168,85,247,.10)
+    );
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+}
+
+.see-more-btn:hover{
+  border-color:#00e5ff;
 }
 
 .grid{
@@ -901,71 +952,6 @@ select:focus{
   white-space:pre-wrap;
 }
 
-.links-card{
-  margin-top:15px;
-}
-
-.link-item{
-  padding:14px 0;
-  border-top:1px solid #202631;
-}
-
-.link-item:first-child{
-  border-top:0;
-}
-
-.link-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-}
-
-.link-product{
-  font-size:14px;
-  font-weight:900;
-}
-
-.link-meta{
-  margin-top:5px;
-  color:#fff;
-  font-size:10px;
-  line-height:1.65;
-  word-break:break-all;
-}
-
-.status{
-  white-space:nowrap;
-  border:1px solid #294632;
-  border-radius:999px;
-  padding:5px 8px;
-  background:#142019;
-  color:#fff;
-  font-size:9px;
-  font-weight:850;
-}
-
-.link-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-}
-
-.small-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:5px;
-  border:1px solid #2a303c;
-  background:#151922;
-  color:#fff;
-  border-radius:9px;
-  padding:8px 10px;
-  margin-top:9px;
-  font-size:10px;
-  font-weight:750;
-}
-
 .public-checkout{
   display:none;
   margin-bottom:15px;
@@ -1152,6 +1138,412 @@ select:focus{
   opacity:.7;
 }
 
+
+/* =========================================================
+   PAYMENT LINKS PAGE
+========================================================= */
+
+.page-view{
+  display:none;
+}
+
+.page-view.show{
+  display:block;
+}
+
+.back-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid #303746;
+  border-radius:11px;
+  padding:9px 11px;
+  background:#11151d;
+  color:#fff;
+  font-size:10px;
+  font-weight:850;
+  margin-bottom:12px;
+}
+
+.page-card{
+  border:1px solid #202631;
+  border-radius:22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14,18,25,.97),
+      rgba(8,10,15,.97)
+    );
+  padding:18px;
+  box-shadow:0 15px 50px rgba(0,0,0,.18);
+}
+
+.page-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:15px;
+}
+
+.page-title{
+  margin:0;
+  font-size:23px;
+  font-weight:950;
+  background:
+    linear-gradient(
+      90deg,
+      #fff,
+      #00e5ff,
+      #a855f7,
+      #ff4fd8,
+      #fff
+    );
+  background-size:300% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:textFlow 5s linear infinite;
+}
+
+.page-subtitle{
+  margin:5px 0 0;
+  color:#fff;
+  opacity:.65;
+  font-size:10px;
+}
+
+.page-count{
+  white-space:nowrap;
+  padding:8px 10px;
+  border:1px solid #303746;
+  border-radius:999px;
+  background:#11151d;
+  color:#fff;
+  font-size:9px;
+  font-weight:850;
+}
+
+.search-box{
+  position:relative;
+  margin-bottom:15px;
+}
+
+.search-box input{
+  padding-left:42px;
+}
+
+.search-icon{
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#fff;
+  opacity:.55;
+  pointer-events:none;
+}
+
+.full-links{
+  display:flex;
+  flex-direction:column;
+}
+
+.full-link-item{
+  padding:16px 0;
+  border-top:1px solid #202631;
+}
+
+.full-link-item:first-child{
+  border-top:0;
+}
+
+.full-link-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.full-link-product{
+  font-size:15px;
+  font-weight:900;
+  line-height:1.4;
+}
+
+.full-link-meta{
+  margin-top:6px;
+  color:#fff;
+  opacity:.72;
+  font-size:10px;
+  line-height:1.7;
+}
+
+.full-link-url{
+  display:block;
+  margin-top:8px;
+  padding:9px;
+  border:1px solid #252c37;
+  border-radius:10px;
+  background:#080b10;
+  color:#fff;
+  opacity:.65;
+  font-size:9px;
+  line-height:1.5;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.full-link-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:11px;
+}
+
+.status{
+  white-space:nowrap;
+  border:1px solid #294632;
+  border-radius:999px;
+  padding:5px 8px;
+  background:#142019;
+  color:#fff;
+  font-size:9px;
+  font-weight:850;
+}
+
+.status.expired{
+  border-color:#493333;
+  background:#1b1010;
+}
+
+.status.completed{
+  border-color:#294632;
+  background:#142019;
+}
+
+.small-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border:1px solid #2a303c;
+  background:#151922;
+  color:#fff;
+  border-radius:9px;
+  padding:8px 10px;
+  margin-top:9px;
+  font-size:10px;
+  font-weight:750;
+}
+
+.small-btn:hover{
+  border-color:#00e5ff;
+}
+
+.empty{
+  padding:24px 10px;
+  text-align:center;
+  color:#fff;
+  opacity:.6;
+  font-size:11px;
+}
+
+.load-more-wrap{
+  display:flex;
+  justify-content:center;
+  margin-top:15px;
+  padding-top:15px;
+  border-top:1px solid #202631;
+}
+
+.load-more-btn{
+  min-width:150px;
+  border:1px solid #303746;
+  border-radius:11px;
+  padding:10px 14px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0,229,255,.08),
+      rgba(168,85,247,.10)
+    );
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+}
+
+.load-more-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.results-info{
+  margin-top:10px;
+  text-align:center;
+  color:#fff;
+  opacity:.55;
+  font-size:9px;
+}
+
+
+/* =========================================================
+   DETAILS PAGE
+========================================================= */
+
+.details-card{
+  border:1px solid #202631;
+  border-radius:22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14,18,25,.97),
+      rgba(8,10,15,.97)
+    );
+  padding:18px;
+  box-shadow:0 15px 50px rgba(0,0,0,.18);
+}
+
+.details-product{
+  font-size:24px;
+  line-height:1.2;
+  font-weight:950;
+}
+
+.details-price{
+  margin-top:9px;
+  font-size:29px;
+  font-weight:950;
+  background:
+    linear-gradient(
+      90deg,
+      #00e5ff,
+      #fff,
+      #a855f7,
+      #ff4fd8,
+      #00e5ff
+    );
+  background-size:350% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:textFlow 4s linear infinite;
+}
+
+.details-status{
+  display:inline-flex;
+  margin-top:11px;
+}
+
+.details-description{
+  margin-top:14px;
+  padding:13px;
+  border:1px solid #29313d;
+  border-radius:14px;
+  background:#0b0f16;
+  color:#fff;
+  font-size:11px;
+  line-height:1.7;
+  white-space:pre-wrap;
+}
+
+.details-media{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+
+.details-media-item{
+  overflow:hidden;
+  aspect-ratio:1;
+  border:1px solid #29313d;
+  border-radius:12px;
+  background:#05070b;
+}
+
+.details-media-item img,
+.details-media-item video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.details-section{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #202631;
+}
+
+.details-section-title{
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.details-row{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:12px;
+  padding:9px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:10px;
+}
+
+.details-row:last-child{
+  border-bottom:0;
+}
+
+.details-row span{
+  color:#fff;
+  opacity:.6;
+}
+
+.details-row strong{
+  word-break:break-word;
+  text-align:right;
+  font-weight:800;
+}
+
+.details-url{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid #29313d;
+  border-radius:12px;
+  background:#070a0f;
+  color:#fff;
+  font-size:9px;
+  line-height:1.6;
+  word-break:break-all;
+}
+
+.details-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:15px;
+}
+
+.details-actions .small-btn{
+  flex:1 1 120px;
+  margin-top:0;
+}
+
+.public-detail-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.public-detail-actions .small-btn{
+  flex:1 1 120px;
+}
+
+
+/* =========================================================
+   PAYMENT MODAL
+========================================================= */
+
 .overlay{
   display:none;
   position:fixed;
@@ -1260,16 +1652,16 @@ select:focus{
     grid-template-columns:1fr;
   }
 
-  .stats{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .stats .stat:last-child{
-    grid-column:span 2;
-  }
-
   .hero h1{
     font-size:27px;
+  }
+
+  .page-head{
+    flex-direction:column;
+  }
+
+  .page-count{
+    align-self:flex-start;
   }
 
 }
@@ -1288,7 +1680,9 @@ select:focus{
     padding:21px 17px;
   }
 
-  .card{
+  .card,
+  .page-card,
+  .details-card{
     padding:16px;
   }
 
@@ -1306,6 +1700,14 @@ select:focus{
 
   .steps{
     grid-template-columns:1fr;
+  }
+
+  .details-media{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .details-row{
+    grid-template-columns:95px 1fr;
   }
 
 }
@@ -1361,7 +1763,9 @@ select:focus{
 </header>
 
 
-<!-- PUBLIC CHECKOUT -->
+<!-- =====================================================
+     PUBLIC CHECKOUT
+===================================================== -->
 
 <section
   class="public-checkout"
@@ -1433,6 +1837,11 @@ select:focus{
         <strong id="publicSeller"></strong>
       </div>
 
+      <div class="row">
+        <span>Quantity</span>
+        <strong id="publicQuantity">1</strong>
+      </div>
+
     </div>
 
     <a
@@ -1484,7 +1893,11 @@ select:focus{
 </section>
 
 
-<!-- HERO -->
+<!-- =====================================================
+     DASHBOARD VIEW
+===================================================== -->
+
+<section id="dashboardView">
 
 <section class="hero">
 
@@ -1520,24 +1933,52 @@ select:focus{
 </section>
 
 
-<!-- STATS -->
+<!-- =====================================================
+     PAYMENT LINK SUMMARY
+===================================================== -->
 
-<section class="stats">
+<section class="card dashboard-links">
 
-  <div class="stat">
-    <div class="stat-label">Completed Payments</div>
-    <div class="stat-value" id="salesCount">0</div>
+  <div class="dashboard-link-head">
+
+    <div>
+
+      <div class="dashboard-link-title">
+        Payment Links
+      </div>
+
+      <div
+        class="dashboard-link-count"
+        id="dashboardLinkCount">
+
+        0 generated
+
+      </div>
+
+    </div>
+
   </div>
 
-  <div class="stat">
-    <div class="stat-label">Completed Volume</div>
-    <div class="stat-value" id="grossVolume">0</div>
+
+  <div id="dashboardRecentLinks">
+
+    <div class="empty">
+      No payment links created yet.
+    </div>
+
   </div>
 
-  <div class="stat">
-    <div class="stat-label">Payment Links</div>
-    <div class="stat-value" id="linkCount">0</div>
-  </div>
+
+  <button
+    type="button"
+    class="see-more-btn"
+    onclick="openLinksPage()">
+
+    See More
+
+    <span>→</span>
+
+  </button>
 
 </section>
 
@@ -1545,7 +1986,9 @@ select:focus{
 <main class="grid">
 
 
-<!-- CREATE PAYMENT -->
+<!-- =====================================================
+     CREATE PAYMENT
+===================================================== -->
 
 <section class="card">
 
@@ -1838,7 +2281,9 @@ select:focus{
 </section>
 
 
-<!-- PREVIEW -->
+<!-- =====================================================
+     PREVIEW
+===================================================== -->
 
 <section class="card">
 
@@ -1949,124 +2394,233 @@ select:focus{
 </main>
 
 
-<!-- PAYMENT LINKS -->
+<div class="how-to-use">
 
-<section class="card links-card">
+  <h3 class="how-title">
+    Simple Payment Flow
+  </h3>
 
-  <h2 class="card-title">
+  <p class="how-intro">
 
-    <span class="icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M4 5h16v14H4z"/>
-        <path d="M8 9h8"/>
-        <path d="M8 13h5"/>
-      </svg>
-    </span>
+    Create a USDC payment request on Arc,
+    share the link, and let the buyer pay
+    directly from a compatible wallet.
 
-    Your Payment Links
-
-  </h2>
+  </p>
 
 
-  <div id="paymentLinks">
+  <div class="steps">
 
-    <div class="empty">
-      No payment links created yet.
+    <div class="step">
+      <div class="step-number">1</div>
+      <h4 class="step-title">Create Payment</h4>
+      <p class="step-text">
+        Enter your product name, USDC price
+        and seller wallet.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <h4 class="step-title">Add Media</h4>
+      <p class="step-text">
+        Select multiple images or add a product
+        video from your phone gallery.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <h4 class="step-title">Generate Link</h4>
+      <p class="step-text">
+        ABS Pay uploads the media to Supabase
+        Storage and creates a shareable URL.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <h4 class="step-title">Share</h4>
+      <p class="step-text">
+        Send the payment link through your
+        website, social media or messaging app.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <h4 class="step-title">Buyer Pays</h4>
+      <p class="step-text">
+        Buyer connects a compatible wallet,
+        switches to Arc and signs the USDC transfer.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <h4 class="step-title">Seller Receives</h4>
+      <p class="step-text">
+        USDC is transferred directly to the
+        specified seller wallet.
+      </p>
     </div>
 
   </div>
 
 
-  <div class="how-to-use">
+  <div class="important-box">
 
-    <h3 class="how-title">
-      Simple Payment Flow
-    </h3>
+    <h4 class="important-title">
+      Direct Blockchain Payment
+    </h4>
 
-    <p class="how-intro">
+    <p class="important-text">
 
-      Create a USDC payment request on Arc,
-      share the link, and let the buyer pay
-      directly from a compatible wallet.
+      Buyer transactions are signed by the
+      buyer's wallet and sent directly to the
+      seller wallet on Arc. ABS Pay does not
+      hold customer funds.
 
     </p>
 
+  </div>
 
-    <div class="steps">
+</section>
 
-      <div class="step">
-        <div class="step-number">1</div>
-        <h4 class="step-title">Create Payment</h4>
-        <p class="step-text">
-          Enter your product name, USDC price
-          and seller wallet.
+</section>
+
+
+<!-- =====================================================
+     PAYMENT LINKS PAGE
+===================================================== -->
+
+<section
+  class="page-view"
+  id="linksPage">
+
+  <button
+    type="button"
+    class="back-btn"
+    onclick="goDashboard()">
+
+    ← Dashboard
+
+  </button>
+
+
+  <div class="page-card">
+
+    <div class="page-head">
+
+      <div>
+
+        <h1 class="page-title">
+          Payment Links
+        </h1>
+
+        <p class="page-subtitle">
+          Manage all generated payment links.
         </p>
+
       </div>
 
-      <div class="step">
-        <div class="step-number">2</div>
-        <h4 class="step-title">Add Media</h4>
-        <p class="step-text">
-          Select multiple images or add a product
-          video from your phone gallery.
-        </p>
-      </div>
+      <div
+        class="page-count"
+        id="fullLinkCount">
 
-      <div class="step">
-        <div class="step-number">3</div>
-        <h4 class="step-title">Generate Link</h4>
-        <p class="step-text">
-          ABS Pay uploads the media to Supabase
-          Storage and creates a shareable URL.
-        </p>
-      </div>
+        0 Links
 
-      <div class="step">
-        <div class="step-number">4</div>
-        <h4 class="step-title">Share</h4>
-        <p class="step-text">
-          Send the payment link through your
-          website, social media or messaging app.
-        </p>
-      </div>
-
-      <div class="step">
-        <div class="step-number">5</div>
-        <h4 class="step-title">Buyer Pays</h4>
-        <p class="step-text">
-          Buyer connects a compatible wallet,
-          switches to Arc and signs the USDC transfer.
-        </p>
-      </div>
-
-      <div class="step">
-        <div class="step-number">6</div>
-        <h4 class="step-title">Seller Receives</h4>
-        <p class="step-text">
-          USDC is transferred directly to the
-          specified seller wallet.
-        </p>
       </div>
 
     </div>
 
 
-    <div class="important-box">
+    <div class="search-box">
 
-      <h4 class="important-title">
-        Direct Blockchain Payment
-      </h4>
+      <span class="search-icon">
 
-      <p class="important-text">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round">
 
-        Buyer transactions are signed by the
-        buyer's wallet and sent directly to the
-        seller wallet on Arc. ABS Pay does not
-        hold customer funds.
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m20 20-4-4"/>
 
-      </p>
+        </svg>
+
+      </span>
+
+      <input
+        id="linkSearch"
+        type="search"
+        placeholder="Search product, wallet or link ID..."
+        oninput="handleLinkSearch()"
+      >
 
     </div>
+
+
+    <div
+      class="full-links"
+      id="fullPaymentLinks">
+
+    </div>
+
+
+    <div
+      class="load-more-wrap"
+      id="loadMoreWrap">
+
+      <button
+        type="button"
+        class="load-more-btn"
+        id="loadMoreBtn"
+        onclick="loadMoreLinks()">
+
+        Load More
+
+      </button>
+
+    </div>
+
+
+    <div
+      class="results-info"
+      id="resultsInfo">
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     PAYMENT DETAILS PAGE
+===================================================== -->
+
+<section
+  class="page-view"
+  id="detailsPage">
+
+  <button
+    type="button"
+    class="back-btn"
+    onclick="openLinksPage()">
+
+    ← Payment Links
+
+  </button>
+
+
+  <div
+    class="details-card"
+    id="detailsContent">
 
   </div>
 
@@ -2080,7 +2634,9 @@ select:focus{
 </div>
 
 
-<!-- PAYMENT MODAL -->
+<!-- =====================================================
+     PAYMENT MODAL
+===================================================== -->
 
 <div
   class="overlay"
@@ -2236,11 +2792,6 @@ const ARC_CONFIG = {
   asset:
     "USDC",
 
-  /*
-    Arc native USDC uses 18 native decimals.
-    Payment is made with a native-value transaction.
-  */
-
   nativeDecimals:
     18
 
@@ -2266,7 +2817,22 @@ let selectedImages =
 let selectedVideo =
   null;
 
-let paymentLinks = [];
+let paymentLinks =
+  [];
+
+let linksVisibleCount =
+  30;
+
+let currentSearch =
+  "";
+
+let currentPage =
+  "dashboard";
+
+
+/* =========================================================
+   LOAD LOCAL LINKS
+========================================================= */
 
 try{
 
@@ -2513,6 +3079,45 @@ function normalizeAmount(value){
 
 
 /* =========================================================
+   DATE
+========================================================= */
+
+function formatDate(timestamp){
+
+  if(!timestamp){
+    return "Unknown";
+  }
+
+  const date =
+    new Date(
+      Number(timestamp)
+    );
+
+  if(
+    Number.isNaN(
+      date.getTime()
+    )
+  ){
+
+    return "Unknown";
+
+  }
+
+  return date.toLocaleString(
+    undefined,
+    {
+      year:"numeric",
+      month:"short",
+      day:"numeric",
+      hour:"numeric",
+      minute:"2-digit"
+    }
+  );
+
+}
+
+
+/* =========================================================
    BASE64 URL
 ========================================================= */
 
@@ -2601,7 +3206,6 @@ function decodePayment(value){
 
 /* =========================================================
    NORMALIZE LOADED PAYMENT
-   Makes old/new payload fields compatible.
 ========================================================= */
 
 function normalizeLoadedPayment(payment){
@@ -2620,10 +3224,6 @@ function normalizeLoadedPayment(payment){
     ...payment
   };
 
-
-  /*
-    Product field compatibility.
-  */
 
   if(
     !normalized.product &&
@@ -2647,10 +3247,6 @@ function normalizeLoadedPayment(payment){
   }
 
 
-  /*
-    Amount field compatibility.
-  */
-
   if(
     !normalized.amount &&
     normalized.price
@@ -2661,10 +3257,6 @@ function normalizeLoadedPayment(payment){
 
   }
 
-
-  /*
-    Wallet / recipient compatibility.
-  */
 
   if(
     !normalized.wallet &&
@@ -2687,10 +3279,6 @@ function normalizeLoadedPayment(payment){
 
   }
 
-
-  /*
-    Network compatibility.
-  */
 
   if(
     !normalized.network
@@ -2722,34 +3310,17 @@ function normalizeLoadedPayment(payment){
   }
 
 
-  /*
-    Native payment compatibility.
-  */
-
   if(
     !normalized.tokenType
   ){
 
-    /*
-      New links are native Arc USDC.
-      If an old payload explicitly contains
-      an ERC-20 token address, do not silently
-      convert it into native payment.
-    */
-
-    if(!normalized.token){
-
-      normalized.tokenType =
-        "native";
-
-    }
+    normalized.tokenType =
+      normalized.token
+        ? "erc20"
+        : "native";
 
   }
 
-
-  /*
-    Images compatibility.
-  */
 
   if(
     !Array.isArray(
@@ -2775,10 +3346,6 @@ function normalizeLoadedPayment(payment){
   }
 
 
-  /*
-    Videos compatibility.
-  */
-
   if(
     !Array.isArray(
       normalized.videos
@@ -2803,16 +3370,22 @@ function normalizeLoadedPayment(payment){
   }
 
 
-  /*
-    Quantity compatibility.
-  */
-
   if(
     !normalized.quantity
   ){
 
     normalized.quantity =
       1;
+
+  }
+
+
+  if(
+    !normalized.status
+  ){
+
+    normalized.status =
+      "Ready";
 
   }
 
@@ -3755,22 +4328,6 @@ function validateLoadedPayment(
   }
 
 
-  /*
-    Old links containing an explicit token
-    address are not used by the native payment flow.
-  */
-
-  if(
-    normalized.token &&
-    normalized.tokenType !==
-    "native"
-  ){
-
-    return false;
-
-  }
-
-
   if(
     !isValidEVMAddress(
       normalized.wallet
@@ -4178,7 +4735,7 @@ async function createPaymentLink(){
     );
 
 
-    renderLinks();
+    renderDashboardLinks();
 
 
     showNotice(
@@ -4269,10 +4826,7 @@ function buildPaymentURL(
 
 
 /* =========================================================
-   RENDER PUBLIC PAYMENT
-   IMPORTANT:
-   Render product information first.
-   Validation happens after the visual data is available.
+   PUBLIC PAYMENT
 ========================================================= */
 
 function renderPublicPayment(
@@ -4305,20 +4859,12 @@ function renderPublicPayment(
   );
 
 
-  /*
-    Product
-  */
-
   document.getElementById(
     "publicProduct"
   ).textContent =
     normalized.product ||
     "Payment";
 
-
-  /*
-    Price
-  */
 
   document.getElementById(
     "publicPrice"
@@ -4329,20 +4875,12 @@ function renderPublicPayment(
     " USDC";
 
 
-  /*
-    Description
-  */
-
   document.getElementById(
     "publicDescription"
   ).textContent =
     normalized.description ||
     "";
 
-
-  /*
-    Seller
-  */
 
   document.getElementById(
     "publicSeller"
@@ -4354,19 +4892,18 @@ function renderPublicPayment(
       : "Not available";
 
 
-  /*
-    Network
-  */
+  document.getElementById(
+    "publicQuantity"
+  ).textContent =
+    normalized.quantity ||
+    1;
+
 
   document.getElementById(
     "publicNetwork"
   ).textContent =
     "USDC payment on Arc Mainnet";
 
-
-  /*
-    Product URL
-  */
 
   const productLink =
     document.getElementById(
@@ -4400,18 +4937,10 @@ function renderPublicPayment(
   }
 
 
-  /*
-    Media
-  */
-
   loadPublicMedia(
     normalized
   );
 
-
-  /*
-    Browser title
-  */
 
   document.title =
     (
@@ -4425,10 +4954,6 @@ function renderPublicPayment(
 
 }
 
-
-/* =========================================================
-   LOAD PUBLIC PAYMENT
-========================================================= */
 
 function loadPublicPayment(){
 
@@ -4455,12 +4980,6 @@ function loadPublicPayment(){
     );
 
 
-  /*
-    NEW IMPORTANT BEHAVIOR:
-    Try to render the decoded product information
-    BEFORE rejecting the payment request.
-  */
-
   const rendered =
     renderPublicPayment(
       payment
@@ -4477,10 +4996,6 @@ function loadPublicPayment(){
 
   }
 
-
-  /*
-    Now perform security/payment validation.
-  */
 
   const valid =
     validateLoadedPayment(
@@ -4527,10 +5042,6 @@ function loadPublicPayment(){
 
 }
 
-
-/* =========================================================
-   PUBLIC PAYMENT WARNING
-========================================================= */
 
 function showPublicPaymentWarning(
   message
@@ -4710,7 +5221,6 @@ function loadPublicMedia(
       img.alt =
         payment.product ||
         "Product";
-
 
       img.loading =
         "lazy";
@@ -5229,8 +5739,6 @@ async function payFromCheckout(){
 
   try{
 
-    /* STEP 1 */
-
     showPaymentStatus(
       "Step 1/6: Connecting to wallet..."
     );
@@ -5256,8 +5764,6 @@ async function payFromCheckout(){
 
     }
 
-
-    /* STEP 2 */
 
     showPaymentStatus(
       "Step 2/6: Switching to Arc Mainnet..."
@@ -5291,8 +5797,6 @@ async function payFromCheckout(){
 
     }
 
-
-    /* STEP 3 */
 
     showPaymentStatus(
       "Step 3/6: Preparing native USDC payment..."
@@ -5338,8 +5842,6 @@ async function payFromCheckout(){
     }
 
 
-    /* STEP 4 */
-
     showPaymentStatus(
       "Step 4/6: Checking native USDC balance...\nWallet: " +
       shortAddress(sender)
@@ -5372,8 +5874,6 @@ async function payFromCheckout(){
 
     }
 
-
-    /* STEP 5 */
 
     showPaymentStatus(
 
@@ -5435,8 +5935,6 @@ async function payFromCheckout(){
     }
 
 
-    /* STEP 6 */
-
     showPaymentStatus(
       "Step 6/6: Payment confirmed."
     );
@@ -5487,7 +5985,8 @@ async function payFromCheckout(){
       );
 
 
-      renderLinks();
+      renderDashboardLinks();
+      renderFullLinks();
 
     }
 
@@ -5583,7 +6082,7 @@ async function buyPublicPayment(){
     )
   ){
 
-    showNotice(
+    showPublicPaymentWarning(
       "This payment request is invalid or expired."
     );
 
@@ -5600,14 +6099,69 @@ async function buyPublicPayment(){
 
 
 /* =========================================================
-   RENDER PAYMENT LINKS
+   PAYMENT LINK STATUS
 ========================================================= */
 
-function renderLinks(){
+function getLinkStatus(item){
+
+  if(
+    item.status ===
+    "Completed"
+  ){
+
+    return {
+      text:"Completed",
+      className:"completed"
+    };
+
+  }
+
+
+  if(
+    item.expiresAt &&
+    Date.now() >
+    Number(item.expiresAt)
+  ){
+
+    return {
+      text:"Expired",
+      className:"expired"
+    };
+
+  }
+
+
+  return {
+    text:"Ready",
+    className:""
+  };
+
+}
+
+
+/* =========================================================
+   DASHBOARD RECENT LINKS
+========================================================= */
+
+function renderDashboardLinks(){
 
   const container =
     document.getElementById(
-      "paymentLinks"
+      "dashboardRecentLinks"
+    );
+
+  const count =
+    document.getElementById(
+      "dashboardLinkCount"
+    );
+
+
+  count.textContent =
+    paymentLinks.length +
+    (
+      paymentLinks.length === 1
+        ? " generated"
+        : " generated"
     );
 
 
@@ -5616,135 +6170,84 @@ function renderLinks(){
     container.innerHTML =
       '<div class="empty">No payment links created yet.</div>';
 
-    updateStats();
-
     return;
 
   }
 
 
+  const recent =
+    paymentLinks.slice(
+      0,
+      3
+    );
+
+
   container.innerHTML =
-    paymentLinks
+    recent
       .map(
         function(item){
 
-          const expired =
-            item.expiresAt &&
-            Date.now() >
-            Number(item.expiresAt);
-
+          const normalized =
+            normalizeLoadedPayment(
+              item
+            );
 
           const status =
-            item.status ===
-            "Completed"
-              ? "Completed"
-              : expired
-                ? "Expired"
-                : "Ready";
+            getLinkStatus(
+              normalized
+            );
+
+
+          const mediaCount =
+            (
+              normalized.images || []
+            ).length +
+            (
+              normalized.videos || []
+            ).length;
 
 
           return `
 
-          <div class="link-item">
+          <div class="full-link-item">
 
-            <div class="link-top">
+            <div class="full-link-top">
 
               <div>
 
-                <div class="link-product">
+                <div class="full-link-product">
 
                   ${escapeHTML(
-                    item.product ||
-                    item.productName ||
-                    item.name ||
+                    normalized.product ||
                     "Payment"
                   )}
 
                 </div>
 
-                <div class="link-meta">
+                <div class="full-link-meta">
 
                   ${escapeHTML(
-                    item.type ||
+                    normalized.type ||
                     "Payment"
                   )}
 
                   •
                   ${escapeHTML(
                     money(
-                      item.amount ||
-                      item.price
+                      normalized.amount
                     )
                   )}
                   USDC
                   • Arc
-
-                  <br>
-
-                  Media:
-                  ${(
-                    (item.images || []).length +
-                    (item.videos || []).length
-                  )}
-
-                  <br>
-
-                  Seller:
-                  ${escapeHTML(
-                    shortAddress(
-                      item.wallet ||
-                      item.sellerWallet ||
-                      item.recipient
-                    )
-                  )}
-
-                  <br>
-
-                  ${escapeHTML(
-                    item.url || ""
-                  )}
+                  • ${mediaCount} media
 
                 </div>
 
               </div>
 
-              <span class="status">
-                ${status}
+              <span class="status ${status.className}">
+                ${status.text}
               </span>
-
-            </div>
-
-
-            <div class="link-actions">
-
-              <button
-                class="small-btn"
-                type="button"
-                onclick='copyLink(${JSON.stringify(item.url || "")})'>
-
-                Copy
-
-              </button>
-
-
-              <button
-                class="small-btn"
-                type="button"
-                onclick='openStoredPayment(${JSON.stringify(item.id)})'>
-
-                Open
-
-              </button>
-
-
-              <button
-                class="small-btn"
-                type="button"
-                onclick='shareURL(${JSON.stringify(item.url || "")})'>
-
-                Share
-
-              </button>
 
             </div>
 
@@ -5756,7 +6259,433 @@ function renderLinks(){
       )
       .join("");
 
-  updateStats();
+}
+
+
+/* =========================================================
+   OPEN PAYMENT LINKS PAGE
+========================================================= */
+
+function openLinksPage(){
+
+  currentPage =
+    "links";
+
+  document.getElementById(
+    "dashboardView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "linksPage"
+  ).classList.add(
+    "show"
+  );
+
+  document.getElementById(
+    "detailsPage"
+  ).classList.remove(
+    "show"
+  );
+
+
+  linksVisibleCount =
+    30;
+
+  currentSearch =
+    "";
+
+  const search =
+    document.getElementById(
+      "linkSearch"
+    );
+
+  if(search){
+    search.value =
+      "";
+  }
+
+
+  renderFullLinks();
+
+
+  window.scrollTo(
+    {
+      top:0,
+      behavior:"smooth"
+    }
+  );
+
+}
+
+
+/* =========================================================
+   FILTER LINKS
+========================================================= */
+
+function getFilteredLinks(){
+
+  const query =
+    String(
+      currentSearch || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if(!query){
+
+    return paymentLinks;
+
+  }
+
+
+  return paymentLinks.filter(
+    function(item){
+
+      const normalized =
+        normalizeLoadedPayment(
+          item
+        );
+
+
+      const searchable = [
+
+        normalized.product,
+
+        normalized.productName,
+
+        normalized.name,
+
+        normalized.type,
+
+        normalized.wallet,
+
+        normalized.sellerWallet,
+
+        normalized.recipient,
+
+        normalized.id,
+
+        normalized.url,
+
+        normalized.referenceId
+
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+
+      return searchable.includes(
+        query
+      );
+
+    }
+  );
+
+}
+
+
+function handleLinkSearch(){
+
+  currentSearch =
+    document.getElementById(
+      "linkSearch"
+    ).value;
+
+  linksVisibleCount =
+    30;
+
+  renderFullLinks();
+
+}
+
+
+/* =========================================================
+   RENDER ALL LINKS
+========================================================= */
+
+function renderFullLinks(){
+
+  const container =
+    document.getElementById(
+      "fullPaymentLinks"
+    );
+
+  const loadWrap =
+    document.getElementById(
+      "loadMoreWrap"
+    );
+
+  const loadButton =
+    document.getElementById(
+      "loadMoreBtn"
+    );
+
+  const resultsInfo =
+    document.getElementById(
+      "resultsInfo"
+    );
+
+  const count =
+    document.getElementById(
+      "fullLinkCount"
+    );
+
+
+  const filtered =
+    getFilteredLinks();
+
+
+  count.textContent =
+    filtered.length +
+    (
+      filtered.length === 1
+        ? " Link"
+        : " Links"
+    );
+
+
+  if(!filtered.length){
+
+    container.innerHTML =
+      '<div class="empty">' +
+      (
+        currentSearch
+          ? "No payment links match your search."
+          : "No payment links created yet."
+      ) +
+      '</div>';
+
+    loadWrap.style.display =
+      "none";
+
+    resultsInfo.textContent =
+      "";
+
+    return;
+
+  }
+
+
+  const visible =
+    filtered.slice(
+      0,
+      linksVisibleCount
+    );
+
+
+  container.innerHTML =
+    visible
+      .map(
+        function(item){
+
+          return renderFullLinkItem(
+            item
+          );
+
+        }
+      )
+      .join("");
+
+
+  if(
+    visible.length <
+    filtered.length
+  ){
+
+    loadWrap.style.display =
+      "flex";
+
+    loadButton.disabled =
+      false;
+
+    loadButton.textContent =
+      "Load More";
+
+  }
+
+  else{
+
+    loadWrap.style.display =
+      "none";
+
+  }
+
+
+  resultsInfo.textContent =
+    "Showing " +
+    visible.length +
+    " of " +
+    filtered.length +
+    " payment links.";
+
+}
+
+
+function renderFullLinkItem(item){
+
+  const normalized =
+    normalizeLoadedPayment(
+      item
+    );
+
+
+  const status =
+    getLinkStatus(
+      normalized
+    );
+
+
+  const mediaCount =
+    (
+      normalized.images || []
+    ).length +
+    (
+      normalized.videos || []
+    ).length;
+
+
+  const url =
+    normalized.url ||
+    "";
+
+
+  return `
+
+  <div class="full-link-item">
+
+    <div class="full-link-top">
+
+      <div style="min-width:0;flex:1;">
+
+        <div class="full-link-product">
+
+          ${escapeHTML(
+            normalized.product ||
+            "Payment"
+          )}
+
+        </div>
+
+        <div class="full-link-meta">
+
+          ${escapeHTML(
+            normalized.type ||
+            "Payment"
+          )}
+
+          •
+          ${escapeHTML(
+            money(
+              normalized.amount
+            )
+          )}
+          USDC
+          • Arc
+          •
+          ${mediaCount} media
+
+          <br>
+
+          Seller:
+          ${escapeHTML(
+            shortAddress(
+              normalized.wallet
+            )
+          )}
+
+          <br>
+
+          Created:
+          ${escapeHTML(
+            formatDate(
+              normalized.createdAt
+            )
+          )}
+
+        </div>
+
+
+        <div class="full-link-url">
+
+          ${escapeHTML(
+            url
+          )}
+
+        </div>
+
+      </div>
+
+
+      <span class="status ${status.className}">
+        ${status.text}
+      </span>
+
+    </div>
+
+
+    <div class="full-link-actions">
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='openPaymentDetails(${JSON.stringify(normalized.id)})'>
+
+        See Details
+
+      </button>
+
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='copyLink(${JSON.stringify(url)})'>
+
+        Copy
+
+      </button>
+
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='openStoredPayment(${JSON.stringify(normalized.id)})'>
+
+        Open
+
+      </button>
+
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='shareURL(${JSON.stringify(url)})'>
+
+        Share
+
+      </button>
+
+    </div>
+
+  </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   LOAD MORE
+========================================================= */
+
+function loadMoreLinks(){
+
+  linksVisibleCount +=
+    30;
+
+  renderFullLinks();
 
 }
 
@@ -5771,8 +6700,8 @@ function openStoredPayment(id){
     paymentLinks.find(
       function(x){
 
-        return x.id ===
-          id;
+        return String(x.id) ===
+          String(id);
 
       }
     );
@@ -5804,6 +6733,624 @@ function openStoredPayment(id){
     item.url,
     "_blank",
     "noopener,noreferrer"
+  );
+
+}
+
+
+/* =========================================================
+   PAYMENT DETAILS PAGE
+========================================================= */
+
+function openPaymentDetails(id){
+
+  const item =
+    paymentLinks.find(
+      function(x){
+
+        return String(x.id) ===
+          String(id);
+
+      }
+    );
+
+
+  if(!item){
+
+    showNotice(
+      "Payment link not found."
+    );
+
+    return;
+
+  }
+
+
+  const normalized =
+    normalizeLoadedPayment(
+      item
+    );
+
+
+  currentPage =
+    "details";
+
+
+  document.getElementById(
+    "dashboardView"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "linksPage"
+  ).classList.remove(
+    "show"
+  );
+
+  document.getElementById(
+    "detailsPage"
+  ).classList.add(
+    "show"
+  );
+
+
+  renderPaymentDetails(
+    normalized
+  );
+
+
+  window.scrollTo(
+    {
+      top:0,
+      behavior:"smooth"
+    }
+  );
+
+}
+
+
+function renderPaymentDetails(
+  payment
+){
+
+  const container =
+    document.getElementById(
+      "detailsContent"
+    );
+
+
+  const status =
+    getLinkStatus(
+      payment
+    );
+
+
+  const images =
+    Array.isArray(
+      payment.images
+    )
+      ? payment.images
+      : [];
+
+
+  const videos =
+    Array.isArray(
+      payment.videos
+    )
+      ? payment.videos
+      : [];
+
+
+  const media = [
+
+    ...images.map(
+      function(url){
+
+        return {
+          type:"image",
+          url:url
+        };
+
+      }
+    ),
+
+    ...videos.map(
+      function(url){
+
+        return {
+          type:"video",
+          url:url
+        };
+
+      }
+    )
+
+  ];
+
+
+  const mediaHTML =
+    media.length
+      ? `
+
+        <div class="details-media">
+
+          ${media.map(
+            function(item){
+
+              if(
+                !/^https?:\/\//i.test(
+                  String(item.url || "")
+                )
+              ){
+
+                return "";
+
+              }
+
+
+              if(
+                item.type ===
+                "video"
+              ){
+
+                return `
+
+                  <div class="details-media-item">
+
+                    <video
+                      src="${escapeHTML(item.url)}"
+                      controls
+                      playsinline
+                      preload="metadata">
+                    </video>
+
+                  </div>
+
+                `;
+
+              }
+
+
+              return `
+
+                <div class="details-media-item">
+
+                  <img
+                    src="${escapeHTML(item.url)}"
+                    alt="${escapeHTML(payment.product || "Product")}"
+                    loading="lazy">
+
+                </div>
+
+              `;
+
+            }
+          ).join("")}
+
+        </div>
+
+      `
+      : "";
+
+
+  const productUrlHTML =
+    payment.productUrl &&
+    /^https?:\/\//i.test(
+      String(payment.productUrl)
+    )
+      ? `
+
+        <div class="details-row">
+
+          <span>Product URL</span>
+
+          <strong>
+
+            <a
+              href="${escapeHTML(payment.productUrl)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:#00e5ff;text-decoration:none;">
+
+              ${escapeHTML(payment.productUrl)}
+
+            </a>
+
+          </strong>
+
+        </div>
+
+      `
+      : "";
+
+
+  const txHTML =
+    payment.txHash
+      ? `
+
+        <div class="details-row">
+
+          <span>Transaction</span>
+
+          <strong>
+
+            <a
+              href="${escapeHTML(
+                ARC_CONFIG.explorer +
+                "/tx/" +
+                payment.txHash
+              )}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:#00e5ff;text-decoration:none;">
+
+              ${escapeHTML(
+                shortAddress(
+                  payment.txHash
+                )
+              )}
+
+            </a>
+
+          </strong>
+
+        </div>
+
+      `
+      : "";
+
+
+  container.innerHTML = `
+
+    <div class="details-product">
+
+      ${escapeHTML(
+        payment.product ||
+        "Payment"
+      )}
+
+    </div>
+
+
+    <div class="details-price">
+
+      ${escapeHTML(
+        money(
+          payment.amount
+        )
+      )}
+      USDC
+
+    </div>
+
+
+    <span class="status ${status.className} details-status">
+
+      ${status.text}
+
+    </span>
+
+
+    ${
+      payment.description
+        ? `
+
+          <div class="details-description">
+
+            ${escapeHTML(
+              payment.description
+            )}
+
+          </div>
+
+        `
+        : ""
+    }
+
+
+    ${mediaHTML}
+
+
+    <div class="details-actions">
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='copyLink(${JSON.stringify(payment.url || "")})'>
+
+        Copy Payment Link
+
+      </button>
+
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='openStoredPayment(${JSON.stringify(payment.id)})'>
+
+        Open Checkout
+
+      </button>
+
+
+      <button
+        class="small-btn"
+        type="button"
+        onclick='shareURL(${JSON.stringify(payment.url || "")})'>
+
+        Share
+
+      </button>
+
+    </div>
+
+
+    <div class="details-section">
+
+      <div class="details-section-title">
+        Payment Information
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Payment ID</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.id || "—"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Payment Type</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.type || "Payment"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Network</span>
+
+        <strong>
+          Arc Mainnet
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Chain ID</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.chainId || 5042
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Asset</span>
+
+        <strong>
+          USDC
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Token Type</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.tokenType || "native"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Quantity</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.quantity || 1
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Platform Fee</span>
+
+        <strong>
+          0 USDC
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="details-section">
+
+      <div class="details-section-title">
+        Seller
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Seller Wallet</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.wallet || "—"
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Recipient</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.recipient ||
+            payment.wallet ||
+            "—"
+          )}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="details-section">
+
+      <div class="details-section-title">
+        Link Information
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Created</span>
+
+        <strong>
+          ${escapeHTML(
+            formatDate(
+              payment.createdAt
+            )
+          )}
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Expiry</span>
+
+        <strong>
+
+          ${
+            payment.expiresAt
+              ? escapeHTML(
+                  formatDate(
+                    payment.expiresAt
+                  )
+                )
+              : "No expiry"
+          }
+
+        </strong>
+
+      </div>
+
+
+      <div class="details-row">
+
+        <span>Reference ID</span>
+
+        <strong>
+          ${escapeHTML(
+            payment.referenceId ||
+            "—"
+          )}
+        </strong>
+
+      </div>
+
+
+      ${productUrlHTML}
+
+      ${txHTML}
+
+    </div>
+
+
+    <div class="details-section">
+
+      <div class="details-section-title">
+        Full Payment Link
+      </div>
+
+
+      <div class="details-url">
+
+        ${escapeHTML(
+          payment.url ||
+          "No URL available."
+        )}
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function goDashboard(){
+
+  currentPage =
+    "dashboard";
+
+  document.getElementById(
+    "dashboardView"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "linksPage"
+  ).classList.remove(
+    "show"
+  );
+
+  document.getElementById(
+    "detailsPage"
+  ).classList.remove(
+    "show"
+  );
+
+
+  renderDashboardLinks();
+
+
+  window.scrollTo(
+    {
+      top:0,
+      behavior:"smooth"
+    }
   );
 
 }
@@ -6152,59 +7699,104 @@ function shortAddress(
 
 
 /* =========================================================
-   STATS
+   URL ROUTING
 ========================================================= */
 
-function updateStats(){
+function handlePageRoute(){
 
-  const completed =
-    paymentLinks.filter(
-      function(item){
-
-        return item.status ===
-          "Completed";
-
-      }
+  const params =
+    new URLSearchParams(
+      window.location.search
     );
 
 
-  const gross =
-    completed.reduce(
-      function(total,item){
-
-        return (
-          total +
-          Number(
-            item.amount ||
-            item.price ||
-            0
-          )
-        );
-
-      },
-      0
+  const pay =
+    params.get(
+      "pay"
     );
 
 
-  document.getElementById(
-    "salesCount"
-  ).textContent =
-    completed.length;
+  const details =
+    params.get(
+      "details"
+    );
 
 
-  document.getElementById(
-    "grossVolume"
-  ).textContent =
-    money(
-      gross
-    ) +
-    " USDC";
+  const links =
+    params.get(
+      "links"
+    );
 
 
-  document.getElementById(
-    "linkCount"
-  ).textContent =
-    paymentLinks.length;
+  /*
+    Public payment URL has priority.
+  */
+
+  if(pay){
+
+    document.getElementById(
+      "dashboardView"
+    ).style.display =
+      "block";
+
+    document.getElementById(
+      "linksPage"
+    ).classList.remove(
+      "show"
+    );
+
+    document.getElementById(
+      "detailsPage"
+    ).classList.remove(
+      "show"
+    );
+
+    loadPublicPayment();
+
+    return;
+
+  }
+
+
+  if(details){
+
+    document.getElementById(
+      "dashboardView"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "linksPage"
+    ).classList.remove(
+      "show"
+    );
+
+    document.getElementById(
+      "detailsPage"
+    ).classList.add(
+      "show"
+    );
+
+
+    openPaymentDetails(
+      details
+    );
+
+    return;
+
+  }
+
+
+  if(links){
+
+    openLinksPage();
+
+    return;
+
+  }
+
+
+  goDashboard();
 
 }
 
@@ -6217,9 +7809,9 @@ updatePreview();
 
 renderSelectedMedia();
 
-renderLinks();
+renderDashboardLinks();
 
-loadPublicPayment();
+handlePageRoute();
 
 
 /* =========================================================
@@ -6241,10 +7833,18 @@ if(window.ethereum){
           accounts[0];
 
 
-        document.getElementById(
-          "sellerWallet"
-        ).value =
-          connectedWallet;
+        const sellerInput =
+          document.getElementById(
+            "sellerWallet"
+          );
+
+
+        if(sellerInput){
+
+          sellerInput.value =
+            connectedWallet;
+
+        }
 
 
         updateWalletButton(
@@ -6259,10 +7859,18 @@ if(window.ethereum){
           "";
 
 
-        document.getElementById(
-          "sellerWallet"
-        ).value =
-          "";
+        const sellerInput =
+          document.getElementById(
+            "sellerWallet"
+          );
+
+
+        if(sellerInput){
+
+          sellerInput.value =
+            "";
+
+        }
 
 
         document.getElementById(
