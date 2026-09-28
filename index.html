@@ -573,6 +573,12 @@ select:focus{
   animation:buttonGradient 5s linear infinite;
 }
 
+.main-btn:disabled,
+.public-buy:disabled,
+.pay-btn:disabled{
+  cursor:not-allowed;
+}
+
 @keyframes buttonGradient{
   0%{background-position:0% center}
   100%{background-position:400% center}
@@ -594,8 +600,6 @@ select:focus{
   color:#777;
   font-size:9px;
 }
-
-/* MEDIA UPLOAD */
 
 .upload-box{
   position:relative;
@@ -716,13 +720,6 @@ select:focus{
   background:rgba(0,0,0,.78);
   color:#fff;
   font-size:15px;
-}
-
-.media-empty{
-  display:none;
-  margin-top:8px;
-  color:#888;
-  font-size:9px;
 }
 
 .media-info{
@@ -901,6 +898,7 @@ select:focus{
   font-size:11px;
   line-height:1.5;
   word-break:break-word;
+  white-space:pre-wrap;
 }
 
 .links-card{
@@ -1249,6 +1247,7 @@ select:focus{
   font-size:10px;
   line-height:1.6;
   word-break:break-word;
+  white-space:pre-wrap;
 }
 
 .tx-result a{
@@ -1449,6 +1448,7 @@ select:focus{
 
     <button
       class="public-buy"
+      id="publicBuyButton"
       onclick="buyPublicPayment()">
 
       Connect Wallet & Pay
@@ -1550,6 +1550,7 @@ select:focus{
 <section class="card">
 
   <h2 class="card-title">
+
     <span class="icon">
       <svg viewBox="0 0 24 24">
         <circle cx="9" cy="20" r="1"/>
@@ -1557,7 +1558,9 @@ select:focus{
         <path d="M3 4h2l2.5 11h11L21 8H6"/>
       </svg>
     </span>
+
     Create Payment
+
   </h2>
 
 
@@ -1615,7 +1618,7 @@ select:focus{
 
       <div>
         <div class="arc-name">Arc Mainnet</div>
-        <div class="arc-asset">USDC</div>
+        <div class="arc-asset">Native USDC</div>
       </div>
 
     </div>
@@ -1653,11 +1656,7 @@ select:focus{
   </div>
 
 
-  <!-- MEDIA UPLOAD -->
-
-  <label>
-    Product Images / Video
-  </label>
+  <label>Product Images / Video</label>
 
   <div
     class="upload-box"
@@ -1936,7 +1935,7 @@ select:focus{
 
       <div class="note">
 
-        Buyer sends USDC directly from the
+        Buyer sends native USDC directly from the
         buyer wallet to the seller wallet on Arc.
 
       </div>
@@ -2080,11 +2079,6 @@ select:focus{
 
 </div>
 
-function showPaymentStatus(message) {
-  const box = document.getElementById("txResult");
-  box.style.display = "block";
-  box.textContent = message;
-}
 
 <!-- PAYMENT MODAL -->
 
@@ -2103,6 +2097,7 @@ function showPaymentStatus(message) {
 
       <button
         class="close-btn"
+        type="button"
         onclick="closePaymentModal()">
         ×
       </button>
@@ -2137,6 +2132,7 @@ function showPaymentStatus(message) {
       <button
         class="pay-btn"
         id="payButton"
+        type="button"
         onclick="payFromCheckout()">
 
         Connect Wallet & Pay
@@ -2175,7 +2171,7 @@ function showPaymentStatus(message) {
 <script>
 
 /* =========================================================
-   ABS PAY — ARC + SUPABASE MEDIA
+   ABS PAY — ARC NATIVE USDC + SUPABASE MEDIA
 ========================================================= */
 
 
@@ -2240,11 +2236,16 @@ const ARC_CONFIG = {
   asset:
     "USDC",
 
-  tokenAddress:
-    "0x3600000000000000000000000000000000000000",
+  /*
+    Arc native USDC uses 18 native decimals.
+    This payment flow uses the native asset directly
+    through eth_sendTransaction.
 
-  tokenDecimals:
-    6
+    No ERC-20 token contract is used here.
+  */
+
+  nativeDecimals:
+    18
 
 };
 
@@ -2268,12 +2269,33 @@ let selectedImages =
 let selectedVideo =
   null;
 
-let paymentLinks =
-  JSON.parse(
+let paymentLinks = [];
+
+try{
+
+  const saved =
     localStorage.getItem(
       "ABS_PAYMENT_LINKS_ARC_V2"
-    ) || "[]"
-  );
+    );
+
+  const parsed =
+    JSON.parse(
+      saved || "[]"
+    );
+
+  paymentLinks =
+    Array.isArray(parsed)
+      ? parsed
+      : [];
+
+}
+
+catch(error){
+
+  paymentLinks =
+    [];
+
+}
 
 
 /* =========================================================
@@ -2352,6 +2374,112 @@ function createId(){
 }
 
 
+function showNotice(message){
+
+  const notice =
+    document.getElementById(
+      "notice"
+    );
+
+  if(!notice){
+    return;
+  }
+
+  notice.style.display =
+    "block";
+
+  notice.textContent =
+    String(message || "");
+
+
+  clearTimeout(
+    window.absNoticeTimer
+  );
+
+
+  window.absNoticeTimer =
+    setTimeout(
+      function(){
+
+        notice.style.display =
+          "none";
+
+      },
+      8000
+    );
+
+}
+
+
+function showPaymentStatus(message){
+
+  const box =
+    document.getElementById(
+      "txResult"
+    );
+
+  if(!box){
+    return;
+  }
+
+  box.style.display =
+    "block";
+
+  box.textContent =
+    String(message || "");
+
+}
+
+
+function showPaymentSuccess(
+  amount,
+  recipient,
+  txHash
+){
+
+  const box =
+    document.getElementById(
+      "txResult"
+    );
+
+  if(!box){
+    return;
+  }
+
+  const explorerURL =
+    ARC_CONFIG.explorer +
+    "/tx/" +
+    txHash;
+
+
+  box.style.display =
+    "block";
+
+  box.innerHTML =
+
+    "<strong>Payment confirmed successfully.</strong>" +
+    "<br><br>" +
+
+    escapeHTML(
+      money(amount)
+    ) +
+    " USDC sent to " +
+
+    escapeHTML(
+      shortAddress(recipient)
+    ) +
+
+    "<br><br>" +
+
+    "<a href=\"" +
+    escapeHTML(explorerURL) +
+    "\" target=\"_blank\" rel=\"noopener noreferrer\">" +
+    "View transaction on Arc Explorer" +
+    "</a>";
+
+}
+
+
 /* =========================================================
    AMOUNT
 ========================================================= */
@@ -2407,7 +2535,9 @@ function encodePayment(data){
   ){
 
     binary +=
-      String.fromCharCode(bytes[i]);
+      String.fromCharCode(
+        bytes[i]
+      );
 
   }
 
@@ -2477,11 +2607,17 @@ function selectPaymentType(
     .querySelectorAll(".type-btn")
     .forEach(
       function(btn){
-        btn.classList.remove("active");
+
+        btn.classList.remove(
+          "active"
+        );
+
       }
     );
 
-  button.classList.add("active");
+  button.classList.add(
+    "active"
+  );
 
   updatePreview();
 
@@ -2496,32 +2632,42 @@ function getFormPayment(){
 
   const product =
     document
-      .getElementById("productName")
+      .getElementById(
+        "productName"
+      )
       .value
       .trim();
 
   const amount =
     normalizeAmount(
       document
-        .getElementById("price")
+        .getElementById(
+          "price"
+        )
         .value
     );
 
   const wallet =
     document
-      .getElementById("sellerWallet")
+      .getElementById(
+        "sellerWallet"
+      )
       .value
       .trim();
 
   const description =
     document
-      .getElementById("description")
+      .getElementById(
+        "description"
+      )
       .value
       .trim();
 
   const productUrl =
     document
-      .getElementById("productUrl")
+      .getElementById(
+        "productUrl"
+      )
       .value
       .trim();
 
@@ -2530,23 +2676,30 @@ function getFormPayment(){
       1,
       Number(
         document
-          .getElementById("quantity")
+          .getElementById(
+            "quantity"
+          )
           .value
       ) || 1
     );
 
   const referenceId =
     document
-      .getElementById("referenceId")
+      .getElementById(
+        "referenceId"
+      )
       .value
       .trim();
 
   const expiryHours =
     Number(
       document
-        .getElementById("expiry")
+        .getElementById(
+          "expiry"
+        )
         .value
     ) || 0;
+
 
   return {
 
@@ -2581,7 +2734,7 @@ function getFormPayment(){
 
 
 /* =========================================================
-   MEDIA VALIDATION
+   MEDIA
 ========================================================= */
 
 function isImageFile(file){
@@ -2611,10 +2764,6 @@ function isVideoFile(file){
 
 }
 
-
-/* =========================================================
-   ADD IMAGES
-========================================================= */
 
 function addImages(files){
 
@@ -2663,20 +2812,17 @@ function addImages(files){
 
     }
 
-    selectedImages.push(file);
+    selectedImages.push(
+      file
+    );
 
   }
 
   renderSelectedMedia();
-
   updatePreview();
 
 }
 
-
-/* =========================================================
-   ADD VIDEO
-========================================================= */
 
 function addVideo(file){
 
@@ -2711,20 +2857,17 @@ function addVideo(file){
     file;
 
   renderSelectedMedia();
-
   updatePreview();
 
 }
 
 
-/* =========================================================
-   FILE PICKERS
-========================================================= */
-
 function openImagePicker(){
 
   document
-    .getElementById("mediaInput")
+    .getElementById(
+      "mediaInput"
+    )
     .click();
 
 }
@@ -2733,15 +2876,13 @@ function openImagePicker(){
 function openVideoPicker(){
 
   document
-    .getElementById("videoInput")
+    .getElementById(
+      "videoInput"
+    )
     .click();
 
 }
 
-
-/* =========================================================
-   MEDIA UI
-========================================================= */
 
 function renderSelectedMedia(){
 
@@ -2755,30 +2896,43 @@ function renderSelectedMedia(){
       "mediaInfo"
     );
 
-  grid.innerHTML = "";
+  grid.innerHTML =
+    "";
 
-  let index = 0;
+  let index =
+    0;
+
 
   selectedImages.forEach(
     function(file){
 
       const item =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       item.className =
         "media-item";
 
+
       const img =
-        document.createElement("img");
+        document.createElement(
+          "img"
+        );
 
       img.src =
-        URL.createObjectURL(file);
+        URL.createObjectURL(
+          file
+        );
 
       img.alt =
         file.name;
 
+
       const badge =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       badge.className =
         "media-badge";
@@ -2786,8 +2940,11 @@ function renderSelectedMedia(){
       badge.textContent =
         "Image";
 
+
       const remove =
-        document.createElement("button");
+        document.createElement(
+          "button"
+        );
 
       remove.className =
         "media-remove";
@@ -2798,11 +2955,15 @@ function renderSelectedMedia(){
       remove.textContent =
         "×";
 
+
+      const currentIndex =
+        index;
+
       remove.onclick =
         function(){
 
           selectedImages.splice(
-            index,
+            currentIndex,
             1
           );
 
@@ -2810,6 +2971,7 @@ function renderSelectedMedia(){
           updatePreview();
 
         };
+
 
       item.appendChild(img);
       item.appendChild(badge);
@@ -2826,13 +2988,18 @@ function renderSelectedMedia(){
   if(selectedVideo){
 
     const item =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     item.className =
       "media-item";
 
+
     const video =
-      document.createElement("video");
+      document.createElement(
+        "video"
+      );
 
     video.src =
       URL.createObjectURL(
@@ -2842,8 +3009,11 @@ function renderSelectedMedia(){
     video.muted =
       true;
 
+
     const badge =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     badge.className =
       "media-badge";
@@ -2851,8 +3021,11 @@ function renderSelectedMedia(){
     badge.textContent =
       "Video";
 
+
     const remove =
-      document.createElement("button");
+      document.createElement(
+        "button"
+      );
 
     remove.className =
       "media-remove";
@@ -2862,6 +3035,7 @@ function renderSelectedMedia(){
 
     remove.textContent =
       "×";
+
 
     remove.onclick =
       function(){
@@ -2874,6 +3048,7 @@ function renderSelectedMedia(){
 
       };
 
+
     item.appendChild(video);
     item.appendChild(badge);
     item.appendChild(remove);
@@ -2885,29 +3060,26 @@ function renderSelectedMedia(){
 
   const count =
     selectedImages.length +
-    (selectedVideo ? 1 : 0);
+    (
+      selectedVideo
+        ? 1
+        : 0
+    );
 
 
-  if(!count){
-
-    info.textContent =
-      "No media selected.";
-
-  }
-
-  else{
-
-    info.textContent =
-      selectedImages.length +
-      " image(s)" +
-      (
-        selectedVideo
-          ? " + 1 video"
-          : ""
-      ) +
-      " selected.";
-
-  }
+  info.textContent =
+    count
+      ? (
+          selectedImages.length +
+          " image(s)" +
+          (
+            selectedVideo
+              ? " + 1 video"
+              : ""
+          ) +
+          " selected."
+        )
+      : "No media selected.";
 
 }
 
@@ -2916,85 +3088,101 @@ function renderSelectedMedia(){
    DRAG & DROP
 ========================================================= */
 
-const uploadBox =
-  document.getElementById(
+document
+  .getElementById(
     "uploadBox"
+  )
+  .addEventListener(
+    "dragover",
+    function(event){
+
+      event.preventDefault();
+
+      this.classList.add(
+        "dragover"
+      );
+
+    }
   );
 
 
-uploadBox.addEventListener(
-  "dragover",
-  function(event){
+document
+  .getElementById(
+    "uploadBox"
+  )
+  .addEventListener(
+    "dragleave",
+    function(){
 
-    event.preventDefault();
-
-    uploadBox.classList.add(
-      "dragover"
-    );
-
-  }
-);
-
-
-uploadBox.addEventListener(
-  "dragleave",
-  function(){
-
-    uploadBox.classList.remove(
-      "dragover"
-    );
-
-  }
-);
-
-
-uploadBox.addEventListener(
-  "drop",
-  function(event){
-
-    event.preventDefault();
-
-    uploadBox.classList.remove(
-      "dragover"
-    );
-
-    const files =
-      Array.from(
-        event.dataTransfer.files || []
+      this.classList.remove(
+        "dragover"
       );
 
-    const images =
-      files.filter(
-        function(file){
-          return isImageFile(file);
-        }
-      );
-
-    const videos =
-      files.filter(
-        function(file){
-          return isVideoFile(file);
-        }
-      );
-
-    if(images.length){
-      addImages(images);
     }
+  );
 
-    if(videos.length){
-      addVideo(videos[0]);
-    }
-
-  }
-);
-
-
-/* =========================================================
-   INPUT EVENTS
-========================================================= */
 
 document
-  .getElementById("mediaInput")
+  .getElementById(
+    "uploadBox"
+  )
+  .addEventListener(
+    "drop",
+    function(event){
+
+      event.preventDefault();
+
+      this.classList.remove(
+        "dragover"
+      );
+
+
+      const files =
+        Array.from(
+          event.dataTransfer.files || []
+        );
+
+
+      const images =
+        files.filter(
+          function(file){
+
+            return isImageFile(
+              file
+            );
+
+          }
+        );
+
+
+      const videos =
+        files.filter(
+          function(file){
+
+            return isVideoFile(
+              file
+            );
+
+          }
+        );
+
+
+      if(images.length){
+        addImages(images);
+      }
+
+      if(videos.length){
+        addVideo(videos[0]);
+      }
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "mediaInput"
+  )
   .addEventListener(
     "change",
     function(event){
@@ -3011,7 +3199,9 @@ document
 
 
 document
-  .getElementById("videoInput")
+  .getElementById(
+    "videoInput"
+  )
   .addEventListener(
     "change",
     function(event){
@@ -3038,11 +3228,18 @@ function updatePreviewMedia(){
       "previewMedia"
     );
 
-  box.innerHTML = "";
+  box.innerHTML =
+    "";
+
 
   const total =
     selectedImages.length +
-    (selectedVideo ? 1 : 0);
+    (
+      selectedVideo
+        ? 1
+        : 0
+    );
+
 
   if(!total){
 
@@ -3053,12 +3250,15 @@ function updatePreviewMedia(){
 
   }
 
+
   box.style.display =
     "block";
 
 
   const gallery =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   gallery.className =
     "preview-gallery";
@@ -3068,18 +3268,26 @@ function updatePreviewMedia(){
     function(file){
 
       const item =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       item.className =
         "preview-gallery-item";
 
+
       const img =
-        document.createElement("img");
+        document.createElement(
+          "img"
+        );
 
       img.src =
-        URL.createObjectURL(file);
+        URL.createObjectURL(
+          file
+        );
 
       item.appendChild(img);
+
       gallery.appendChild(item);
 
     }
@@ -3089,13 +3297,18 @@ function updatePreviewMedia(){
   if(selectedVideo){
 
     const item =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     item.className =
       "preview-gallery-item";
 
+
     const video =
-      document.createElement("video");
+      document.createElement(
+        "video"
+      );
 
     video.src =
       URL.createObjectURL(
@@ -3105,7 +3318,9 @@ function updatePreviewMedia(){
     video.muted =
       true;
 
+
     item.appendChild(video);
+
     gallery.appendChild(item);
 
   }
@@ -3127,11 +3342,13 @@ function updatePreview(){
     data.amount ||
     "0";
 
+
   document.getElementById(
     "previewProduct"
   ).textContent =
     data.product ||
     "Your Product";
+
 
   document.getElementById(
     "previewPrice"
@@ -3139,11 +3356,13 @@ function updatePreview(){
     money(amount) +
     " USDC";
 
+
   document.getElementById(
     "previewGross"
   ).textContent =
     money(amount) +
     " USDC";
+
 
   document.getElementById(
     "previewNet"
@@ -3151,15 +3370,19 @@ function updatePreview(){
     money(amount) +
     " USDC";
 
+
   document.getElementById(
     "previewQuantity"
   ).textContent =
     data.quantity;
 
+
   document.getElementById(
     "previewDescription"
   ).textContent =
-    data.description || "";
+    data.description ||
+    "";
+
 
   updatePreviewMedia();
 
@@ -3215,14 +3438,15 @@ function validatePaymentData(data){
 
 
 /* =========================================================
-   UPLOAD MEDIA TO SUPABASE
+   UPLOAD MEDIA
 ========================================================= */
 
 async function uploadMediaFiles(
   paymentId
 ){
 
-  const uploaded = [];
+  const uploaded =
+    [];
 
   const folder =
     connectedWallet
@@ -3233,10 +3457,12 @@ async function uploadMediaFiles(
   const files = [
     ...selectedImages.map(
       function(file){
+
         return {
           file:file,
           type:"image"
         };
+
       }
     )
   ];
@@ -3245,8 +3471,13 @@ async function uploadMediaFiles(
   if(selectedVideo){
 
     files.push({
-      file:selectedVideo,
-      type:"video"
+
+      file:
+        selectedVideo,
+
+      type:
+        "video"
+
     });
 
   }
@@ -3264,12 +3495,14 @@ async function uploadMediaFiles(
     const file =
       item.file;
 
+
     const safeName =
       file.name
         .replace(
           /[^a-zA-Z0-9._-]/g,
           "_"
         );
+
 
     const path =
       folder +
@@ -3302,9 +3535,14 @@ async function uploadMediaFiles(
           path,
           file,
           {
-            cacheControl:"31536000",
-            upsert:false,
-            contentType:file.type
+            cacheControl:
+              "31536000",
+
+            upsert:
+              false,
+
+            contentType:
+              file.type
           }
         );
 
@@ -3330,11 +3568,11 @@ async function uploadMediaFiles(
         );
 
 
-    if(
-      !publicResult ||
-      !publicResult.data ||
-      !publicResult.data.publicUrl
-    ){
+    const publicUrl =
+      publicResult?.data?.publicUrl;
+
+
+    if(!publicUrl){
 
       throw new Error(
         "Could not create public media URL."
@@ -3352,7 +3590,7 @@ async function uploadMediaFiles(
         file.name,
 
       url:
-        publicResult.data.publicUrl
+        publicUrl
 
     });
 
@@ -3372,6 +3610,7 @@ async function createPaymentLink(){
 
   const data =
     getFormPayment();
+
 
   if(
     !validatePaymentData(data)
@@ -3396,6 +3635,9 @@ async function createPaymentLink(){
     button.style.opacity =
       ".6";
 
+    button.textContent =
+      "Creating Link...";
+
 
     const paymentId =
       createId();
@@ -3405,7 +3647,9 @@ async function createPaymentLink(){
       0;
 
 
-    if(data.expiryHours > 0){
+    if(
+      data.expiryHours > 0
+    ){
 
       expiresAt =
         Date.now() +
@@ -3427,12 +3671,17 @@ async function createPaymentLink(){
       media
         .filter(
           function(item){
-            return item.type === "image";
+
+            return item.type ===
+              "image";
+
           }
         )
         .map(
           function(item){
+
             return item.url;
+
           }
         );
 
@@ -3441,12 +3690,17 @@ async function createPaymentLink(){
       media
         .filter(
           function(item){
-            return item.type === "video";
+
+            return item.type ===
+              "video";
+
           }
         )
         .map(
           function(item){
+
             return item.url;
+
           }
         );
 
@@ -3454,7 +3708,7 @@ async function createPaymentLink(){
     const payment = {
 
       version:
-        2,
+        3,
 
       id:
         paymentId,
@@ -3477,8 +3731,13 @@ async function createPaymentLink(){
       asset:
         "USDC",
 
-      token:
-        ARC_CONFIG.tokenAddress,
+      /*
+        Native Arc USDC.
+        No ERC-20 token address is stored.
+      */
+
+      tokenType:
+        "native",
 
       wallet:
         data.wallet,
@@ -3568,6 +3827,7 @@ async function createPaymentLink(){
       );
 
     }
+
     else{
 
       await copyToClipboard(
@@ -3585,9 +3845,10 @@ async function createPaymentLink(){
   catch(error){
 
     console.error(
-      "ABS Pay media/link error:",
+      "ABS Pay link error:",
       error
     );
+
 
     showNotice(
       error?.message ||
@@ -3603,6 +3864,9 @@ async function createPaymentLink(){
 
     button.style.opacity =
       "1";
+
+    button.textContent =
+      "Create Payment Link";
 
   }
 
@@ -3620,6 +3884,7 @@ function buildPaymentURL(
   const base =
     window.location.origin +
     window.location.pathname;
+
 
   return (
     base +
@@ -3644,19 +3909,23 @@ function validateLoadedPayment(
     return false;
   }
 
+
   if(
-    payment.version !== 1 &&
+    payment.version !== 3 &&
     payment.version !== 2
   ){
     return false;
   }
 
+
   if(
     !payment.product ||
-    typeof payment.product !== "string"
+    typeof payment.product !==
+    "string"
   ){
     return false;
   }
+
 
   if(
     !payment.amount ||
@@ -3667,11 +3936,14 @@ function validateLoadedPayment(
     return false;
   }
 
+
   if(
-    payment.network !== "Arc"
+    payment.network !==
+    "Arc"
   ){
     return false;
   }
+
 
   if(
     Number(payment.chainId) !==
@@ -3680,20 +3952,42 @@ function validateLoadedPayment(
     return false;
   }
 
+
   if(
-    payment.asset !== "USDC"
+    payment.asset !==
+    "USDC"
   ){
     return false;
   }
 
+
+  /*
+    New links use native USDC.
+    Old v2 links that contain an ERC-20
+    token field are rejected intentionally
+    so they cannot call an unverified contract.
+  */
+
   if(
-    String(payment.token)
-      .toLowerCase() !==
-    ARC_CONFIG.tokenAddress
-      .toLowerCase()
+    payment.version === 2 &&
+    payment.token
   ){
+
     return false;
+
   }
+
+
+  if(
+    payment.version === 3 &&
+    payment.tokenType !==
+    "native"
+  ){
+
+    return false;
+
+  }
+
 
   if(
     !isValidEVMAddress(
@@ -3703,6 +3997,7 @@ function validateLoadedPayment(
     return false;
   }
 
+
   if(
     payment.expiresAt &&
     Date.now() >
@@ -3710,6 +4005,7 @@ function validateLoadedPayment(
   ){
     return false;
   }
+
 
   return true;
 
@@ -3726,6 +4022,7 @@ function renderLinks(){
     document.getElementById(
       "paymentLinks"
     );
+
 
   if(!paymentLinks.length){
 
@@ -3749,8 +4046,10 @@ function renderLinks(){
             Date.now() >
             Number(item.expiresAt);
 
+
           const status =
-            item.status === "Completed"
+            item.status ===
+            "Completed"
               ? "Completed"
               : expired
                 ? "Expired"
@@ -3776,7 +4075,8 @@ function renderLinks(){
                 <div class="link-meta">
 
                   ${escapeHTML(
-                    item.type || "Payment"
+                    item.type ||
+                    "Payment"
                   )}
 
                   •
@@ -3806,7 +4106,7 @@ function renderLinks(){
                   <br>
 
                   ${escapeHTML(
-                    item.url
+                    item.url || ""
                   )}
 
                 </div>
@@ -3824,7 +4124,8 @@ function renderLinks(){
 
               <button
                 class="small-btn"
-                onclick='copyLink(${JSON.stringify(item.url)})'>
+                type="button"
+                onclick='copyLink(${JSON.stringify(item.url || "")})'>
 
                 Copy
 
@@ -3833,6 +4134,7 @@ function renderLinks(){
 
               <button
                 class="small-btn"
+                type="button"
                 onclick='openStoredPayment(${JSON.stringify(item.id)})'>
 
                 Open
@@ -3842,7 +4144,8 @@ function renderLinks(){
 
               <button
                 class="small-btn"
-                onclick='shareURL(${JSON.stringify(item.url)})'>
+                type="button"
+                onclick='shareURL(${JSON.stringify(item.url || "")})'>
 
                 Share
 
@@ -3872,9 +4175,13 @@ function openStoredPayment(id){
   const item =
     paymentLinks.find(
       function(x){
-        return x.id === id;
+
+        return x.id ===
+          id;
+
       }
     );
+
 
   if(!item){
 
@@ -3885,6 +4192,18 @@ function openStoredPayment(id){
     return;
 
   }
+
+
+  if(!item.url){
+
+    showNotice(
+      "This payment link has no URL."
+    );
+
+    return;
+
+  }
+
 
   window.open(
     item.url,
@@ -3906,10 +4225,12 @@ function openPaymentModal(
   currentPayment =
     payment;
 
+
   document.getElementById(
     "modalProduct"
   ).textContent =
     payment.product;
+
 
   document.getElementById(
     "modalPrice"
@@ -3917,27 +4238,35 @@ function openPaymentModal(
     money(payment.amount) +
     " USDC";
 
+
   document.getElementById(
     "modalDetails"
   ).textContent =
-    "Arc • USDC • Seller: " +
+    "Arc • Native USDC • Seller: " +
     payment.wallet +
     " • Platform fee: 0 USDC";
 
-  document.getElementById(
-    "txResult"
-  ).style.display =
+
+  const result =
+    document.getElementById(
+      "txResult"
+    );
+
+  result.style.display =
     "none";
 
-  document.getElementById(
-    "txResult"
-  ).innerHTML =
+  result.innerHTML =
     "";
+
+  result.textContent =
+    "";
+
 
   const payButton =
     document.getElementById(
       "payButton"
     );
+
 
   payButton.disabled =
     false;
@@ -3945,8 +4274,9 @@ function openPaymentModal(
   payButton.style.opacity =
     "1";
 
-  payButton.innerHTML =
+  payButton.textContent =
     "Connect Wallet & Pay";
+
 
   document.getElementById(
     "paymentOverlay"
@@ -3991,17 +4321,20 @@ function continuePayment(){
   const data =
     getFormPayment();
 
+
   if(
     !validatePaymentData(data)
   ){
+
     return;
+
   }
 
 
   currentPayment = {
 
     version:
-      2,
+      3,
 
     id:
       "FORM-" +
@@ -4025,8 +4358,8 @@ function continuePayment(){
     asset:
       "USDC",
 
-    token:
-      ARC_CONFIG.tokenAddress,
+    tokenType:
+      "native",
 
     wallet:
       data.wallet,
@@ -4083,7 +4416,10 @@ async function switchToArc(){
 
   const current =
     await window.ethereum.request({
-      method:"eth_chainId"
+
+      method:
+        "eth_chainId"
+
     });
 
 
@@ -4120,7 +4456,8 @@ async function switchToArc(){
 
     if(
       error &&
-      error.code === 4902
+      error.code ===
+      4902
     ){
 
       await window.ethereum.request({
@@ -4129,7 +4466,6 @@ async function switchToArc(){
           "wallet_addEthereumChain",
 
         params:[
-
           {
 
             chainId:
@@ -4160,7 +4496,6 @@ async function switchToArc(){
             ]
 
           }
-
         ]
 
       });
@@ -4178,7 +4513,10 @@ async function switchToArc(){
 
   const after =
     await window.ethereum.request({
-      method:"eth_chainId"
+
+      method:
+        "eth_chainId"
+
     });
 
 
@@ -4198,28 +4536,20 @@ async function switchToArc(){
 
 
 /* =========================================================
-   VERIFY TOKEN
+   NATIVE USDC BALANCE
 ========================================================= */
 
-async function verifyTokenContract(
-  provider
+async function getNativeUSDCBalance(
+  provider,
+  address
 ){
 
-  const code =
-    await provider.getCode(
-      ARC_CONFIG.tokenAddress
+  const balance =
+    await provider.getBalance(
+      address
     );
 
-  if(
-    !code ||
-    code === "0x"
-  ){
-
-    throw new Error(
-      "Configured Arc USDC contract was not found."
-    );
-
-  }
+  return balance;
 
 }
 
@@ -4228,174 +4558,411 @@ async function verifyTokenContract(
    PAYMENT
 ========================================================= */
 
-async function payFromCheckout() {
-  const payButton = document.getElementById("payButton");
+async function payFromCheckout(){
 
-  if (payButton.disabled) return;
+  const payButton =
+    document.getElementById(
+      "payButton"
+    );
 
-  if (!currentPayment) {
-    showPaymentStatus("Error: No payment request selected.");
+
+  if(payButton.disabled){
     return;
   }
 
-  if (!validateLoadedPayment(currentPayment)) {
-    showPaymentStatus("Error: Invalid or expired payment request.");
+
+  if(!currentPayment){
+
+    showPaymentStatus(
+      "Error: No payment request selected."
+    );
+
     return;
+
   }
 
-  if (!window.ethereum) {
+
+  if(
+    !validateLoadedPayment(
+      currentPayment
+    )
+  ){
+
+    showPaymentStatus(
+      "Error: Invalid or expired payment request."
+    );
+
+    return;
+
+  }
+
+
+  if(!window.ethereum){
+
     showPaymentStatus(
       "Error: No compatible wallet detected. Open this page inside MetaMask."
     );
+
     return;
+
   }
 
-  payButton.disabled = true;
-  payButton.style.opacity = ".6";
-  payButton.textContent = "Connecting...";
 
-  try {
-    showPaymentStatus("Step 1/6: Connecting to wallet...");
+  payButton.disabled =
+    true;
 
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts"
-    });
+  payButton.style.opacity =
+    ".6";
 
-    if (!accounts || !accounts[0]) {
-      throw new Error("Wallet connection was not completed.");
+  payButton.textContent =
+    "Connecting...";
+
+
+  try{
+
+    /* STEP 1 */
+
+    showPaymentStatus(
+      "Step 1/6: Connecting to wallet..."
+    );
+
+
+    const accounts =
+      await window.ethereum.request({
+
+        method:
+          "eth_requestAccounts"
+
+      });
+
+
+    if(
+      !accounts ||
+      !accounts[0]
+    ){
+
+      throw new Error(
+        "Wallet connection was not completed."
+      );
+
     }
 
-    showPaymentStatus("Step 2/6: Switching to Arc Mainnet...");
+
+    /* STEP 2 */
+
+    showPaymentStatus(
+      "Step 2/6: Switching to Arc Mainnet..."
+    );
+
 
     await switchToArc();
 
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const network = await provider.getNetwork();
 
-    if (Number(network.chainId) !== ARC_CONFIG.chainIdNumber) {
+    const provider =
+      new ethers.BrowserProvider(
+        window.ethereum
+      );
+
+
+    const network =
+      await provider.getNetwork();
+
+
+    if(
+      Number(
+        network.chainId
+      ) !==
+      ARC_CONFIG.chainIdNumber
+    ){
+
       throw new Error(
         "Wrong network. Expected Arc (5042), received " +
         network.chainId.toString()
       );
+
     }
 
-    showPaymentStatus("Step 3/6: Verifying USDC contract...");
 
-    await verifyTokenContract(provider);
-
-    const signer = await provider.getSigner();
-    const sender = await signer.getAddress();
+    /* STEP 3 */
 
     showPaymentStatus(
-      "Step 4/6: Checking USDC balance...\nWallet: " +
+      "Step 3/6: Preparing native USDC payment..."
+    );
+
+
+    const signer =
+      await provider.getSigner();
+
+
+    const sender =
+      await signer.getAddress();
+
+
+    const recipient =
+      String(
+        currentPayment.wallet
+      ).trim();
+
+
+    if(
+      !isValidEVMAddress(
+        recipient
+      )
+    ){
+
+      throw new Error(
+        "Invalid seller wallet address."
+      );
+
+    }
+
+
+    if(
+      sender.toLowerCase() ===
+      recipient.toLowerCase()
+    ){
+
+      throw new Error(
+        "Buyer and seller wallets cannot be the same."
+      );
+
+    }
+
+
+    /* STEP 4 */
+
+    showPaymentStatus(
+      "Step 4/6: Checking native USDC balance...\nWallet: " +
       shortAddress(sender)
     );
 
-    const amount = ethers.parseUnits(
-      String(currentPayment.amount),
-      ARC_CONFIG.tokenDecimals
-    );
 
-    const tokenContract = new ethers.Contract(
-      ARC_CONFIG.tokenAddress,
-      [
-        "function transfer(address to,uint256 amount) returns (bool)",
-        "function balanceOf(address account) view returns (uint256)"
-      ],
-      signer
-    );
+    /*
+      Arc native USDC uses 18 decimals.
+      The amount field accepts up to 6 decimals
+      for normal USDC display precision.
+    */
 
-    const balance = await tokenContract.balanceOf(sender);
-
-    if (balance < amount) {
-      throw new Error("Insufficient USDC balance.");
-    }
-
-    showPaymentStatus(
-      "Step 5/6: Requesting transaction approval in MetaMask...\n\n" +
-      "Amount: " + money(currentPayment.amount) + " USDC\n" +
-      "Recipient: " + currentPayment.wallet
-    );
-
-    payButton.textContent = "Check MetaMask...";
-
-    const tx = await tokenContract.transfer(
-      currentPayment.wallet,
-      amount
-    );
-
-    showPaymentStatus(
-      "Transaction submitted. Waiting for confirmation...\n\n" +
-      tx.hash
-    );
-
-    payButton.textContent = "Waiting for confirmation...";
-
-    const receipt = await tx.wait();
-
-    if (!receipt || receipt.status !== 1) {
-      throw new Error("Blockchain transaction failed.");
-    }
-
-    const explorerURL = ARC_CONFIG.explorer + "/tx/" + tx.hash;
-
-    const txResult = document.getElementById("txResult");
-    txResult.style.display = "block";
-
-    txResult.innerHTML = `
-      <strong>Payment confirmed successfully.</strong>
-      <br><br>
-      ${escapeHTML(money(currentPayment.amount))} USDC sent to
-      ${escapeHTML(shortAddress(currentPayment.wallet))}
-      <br><br>
-      <a href="${escapeHTML(explorerURL)}"
-         target="_blank"
-         rel="noopener noreferrer">
-        View transaction on Arc Explorer
-      </a>
-    `;
-
-    const localItem = paymentLinks.find(
-      item => item.id === currentPayment.id
-    );
-
-    if (localItem) {
-      localItem.status = "Completed";
-      localItem.txHash = tx.hash;
-      localItem.completedAt = Date.now();
-
-      localStorage.setItem(
-        "ABS_PAYMENT_LINKS_ARC_V2",
-        JSON.stringify(paymentLinks)
+    const amount =
+      ethers.parseUnits(
+        String(
+          currentPayment.amount
+        ),
+        ARC_CONFIG.nativeDecimals
       );
 
-      renderLinks();
+
+    const balance =
+      await getNativeUSDCBalance(
+        provider,
+        sender
+      );
+
+
+    if(
+      balance < amount
+    ){
+
+      throw new Error(
+        "Insufficient USDC balance on Arc."
+      );
+
     }
 
-    payButton.textContent = "Payment Confirmed";
 
-  } catch (error) {
-    console.error("ABS Pay payment error:", error);
+    /* STEP 5 */
 
-    const message =
+    showPaymentStatus(
+
+      "Step 5/6: Requesting transaction approval in MetaMask...\n\n" +
+
+      "Amount: " +
+      money(
+        currentPayment.amount
+      ) +
+      " USDC\n" +
+
+      "Recipient: " +
+      recipient
+
+    );
+
+
+    payButton.textContent =
+      "Check MetaMask...";
+
+
+    /*
+      IMPORTANT:
+      This is a native-value transaction.
+      MetaMask should now show the transaction
+      confirmation window.
+    */
+
+    const tx =
+      await signer.sendTransaction({
+
+        to:
+          recipient,
+
+        value:
+          amount
+
+      });
+
+
+    showPaymentStatus(
+
+      "Transaction submitted. Waiting for confirmation...\n\n" +
+      tx.hash
+
+    );
+
+
+    payButton.textContent =
+      "Waiting for confirmation...";
+
+
+    const receipt =
+      await tx.wait();
+
+
+    if(
+      !receipt ||
+      receipt.status !== 1
+    ){
+
+      throw new Error(
+        "Blockchain transaction failed."
+      );
+
+    }
+
+
+    /* STEP 6 */
+
+    showPaymentStatus(
+      "Step 6/6: Payment confirmed."
+    );
+
+
+    showPaymentSuccess(
+
+      currentPayment.amount,
+
+      recipient,
+
+      tx.hash
+
+    );
+
+
+    const localItem =
+      paymentLinks.find(
+        function(item){
+
+          return item.id ===
+            currentPayment.id;
+
+        }
+      );
+
+
+    if(localItem){
+
+      localItem.status =
+        "Completed";
+
+      localItem.txHash =
+        tx.hash;
+
+      localItem.completedAt =
+        Date.now();
+
+
+      localStorage.setItem(
+
+        "ABS_PAYMENT_LINKS_ARC_V2",
+
+        JSON.stringify(
+          paymentLinks
+        )
+
+      );
+
+
+      renderLinks();
+
+    }
+
+
+    payButton.textContent =
+      "Payment Confirmed";
+
+
+    payButton.style.opacity =
+      "1";
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      "ABS Pay payment error:",
+      error
+    );
+
+
+    let message =
       error?.shortMessage ||
       error?.reason ||
       error?.message ||
       String(error);
 
-    showPaymentStatus("Payment failed:\n\n" + message);
 
-    payButton.disabled = false;
-    payButton.style.opacity = "1";
-    payButton.textContent = "Try Payment Again";
+    if(
+      error?.code ===
+      4001
+    ){
+
+      message =
+        "Transaction was cancelled in MetaMask.";
+
+    }
+
+
+    showPaymentStatus(
+      "Payment failed:\n\n" +
+      message
+    );
+
+
+    payButton.disabled =
+      false;
+
+    payButton.style.opacity =
+      "1";
+
+    payButton.textContent =
+      "Try Payment Again";
+
   }
+
 }
+
 
 /* =========================================================
    PUBLIC PAYMENT
 ========================================================= */
 
 async function buyPublicPayment(){
+
+  const button =
+    document.getElementById(
+      "publicBuyButton"
+    );
+
 
   if(!currentPayment){
 
@@ -4441,8 +5008,11 @@ function loadPublicPayment(){
       window.location.search
     );
 
+
   const encoded =
-    params.get("pay");
+    params.get(
+      "pay"
+    );
 
 
   if(!encoded){
@@ -4451,7 +5021,9 @@ function loadPublicPayment(){
 
 
   const payment =
-    decodePayment(encoded);
+    decodePayment(
+      encoded
+    );
 
 
   if(
@@ -4477,7 +5049,9 @@ function loadPublicPayment(){
     .getElementById(
       "publicCheckout"
     )
-    .classList.add("show");
+    .classList.add(
+      "show"
+    );
 
 
   document.getElementById(
@@ -4489,7 +5063,9 @@ function loadPublicPayment(){
   document.getElementById(
     "publicPrice"
   ).textContent =
-    money(payment.amount) +
+    money(
+      payment.amount
+    ) +
     " USDC";
 
 
@@ -4506,6 +5082,12 @@ function loadPublicPayment(){
     shortAddress(
       payment.wallet
     );
+
+
+  document.getElementById(
+    "publicNetwork"
+  ).textContent =
+    "USDC payment on Arc Mainnet";
 
 
   const productLink =
@@ -4555,7 +5137,9 @@ function loadPublicMedia(
       "publicMedia"
     );
 
-  box.innerHTML = "";
+
+  box.innerHTML =
+    "";
 
   box.style.display =
     "none";
@@ -4576,11 +5160,6 @@ function loadPublicMedia(
       ? payment.videos
       : [];
 
-
-  /*
-    Backward compatibility with
-    older single-media links.
-  */
 
   if(
     !images.length &&
@@ -4621,6 +5200,7 @@ function loadPublicMedia(
       "div"
     );
 
+
   gallery.className =
     "public-media-gallery";
 
@@ -4633,7 +5213,9 @@ function loadPublicMedia(
           url
         )
       ){
+
         return;
+
       }
 
 
@@ -4641,6 +5223,7 @@ function loadPublicMedia(
         document.createElement(
           "div"
         );
+
 
       item.className =
         "public-media-item";
@@ -4651,6 +5234,7 @@ function loadPublicMedia(
           "img"
         );
 
+
       img.src =
         url;
 
@@ -4658,9 +5242,14 @@ function loadPublicMedia(
         payment.product;
 
 
-      item.appendChild(img);
+      item.appendChild(
+        img
+      );
 
-      gallery.appendChild(item);
+
+      gallery.appendChild(
+        item
+      );
 
     }
   );
@@ -4674,7 +5263,9 @@ function loadPublicMedia(
           url
         )
       ){
+
         return;
+
       }
 
 
@@ -4682,6 +5273,7 @@ function loadPublicMedia(
         document.createElement(
           "div"
         );
+
 
       item.className =
         "public-media-item";
@@ -4691,6 +5283,7 @@ function loadPublicMedia(
         document.createElement(
           "video"
         );
+
 
       video.src =
         url;
@@ -4702,15 +5295,22 @@ function loadPublicMedia(
         true;
 
 
-      item.appendChild(video);
+      item.appendChild(
+        video
+      );
 
-      gallery.appendChild(item);
+
+      gallery.appendChild(
+        item
+      );
 
     }
   );
 
 
-  if(gallery.children.length){
+  if(
+    gallery.children.length
+  ){
 
     box.appendChild(
       gallery
@@ -4735,9 +5335,13 @@ async function shareCurrentPreview(){
 
 
   if(
-    !validatePaymentData(data)
+    !validatePaymentData(
+      data
+    )
   ){
+
     return;
+
   }
 
 
@@ -4772,7 +5376,10 @@ async function shareURL(url){
     }
 
 
-    await copyToClipboard(url);
+    await copyToClipboard(
+      url
+    );
+
 
     showNotice(
       "Payment link copied."
@@ -4786,13 +5393,17 @@ async function shareURL(url){
       error?.name ===
       "AbortError"
     ){
+
       return;
+
     }
 
 
     try{
 
-      await copyToClipboard(url);
+      await copyToClipboard(
+        url
+      );
 
       showNotice(
         "Payment link copied."
@@ -4840,6 +5451,7 @@ async function copyToClipboard(
       "textarea"
     );
 
+
   textarea.value =
     text;
 
@@ -4849,17 +5461,21 @@ async function copyToClipboard(
   textarea.style.left =
     "-9999px";
 
+
   document.body.appendChild(
     textarea
   );
 
+
   textarea.focus();
   textarea.select();
+
 
   const success =
     document.execCommand(
       "copy"
     );
+
 
   document.body.removeChild(
     textarea
@@ -4881,7 +5497,9 @@ async function copyLink(url){
 
   try{
 
-    await copyToClipboard(url);
+    await copyToClipboard(
+      url
+    );
 
     showNotice(
       "Payment link copied."
@@ -4959,7 +5577,8 @@ async function connectWallet(){
   catch(error){
 
     if(
-      error?.code === 4001
+      error?.code ===
+      4001
     ){
 
       showNotice(
@@ -5005,7 +5624,9 @@ function updateWalletButton(
     </span>
 
     ${escapeHTML(
-      shortAddress(address)
+      shortAddress(
+        address
+      )
     )}
 
   `;
@@ -5030,6 +5651,7 @@ function shortAddress(
 
   }
 
+
   return (
     address.slice(0,6) +
     "..." +
@@ -5048,8 +5670,10 @@ function updateStats(){
   const completed =
     paymentLinks.filter(
       function(item){
+
         return item.status ===
           "Completed";
+
       }
     );
 
@@ -5058,10 +5682,12 @@ function updateStats(){
     completed.reduce(
       function(total,item){
 
-        return total +
+        return (
+          total +
           Number(
             item.amount || 0
-          );
+          )
+        );
 
       },
       0
@@ -5077,7 +5703,9 @@ function updateStats(){
   document.getElementById(
     "grossVolume"
   ).textContent =
-    money(gross) +
+    money(
+      gross
+    ) +
     " USDC";
 
 
@@ -5085,45 +5713,6 @@ function updateStats(){
     "linkCount"
   ).textContent =
     paymentLinks.length;
-
-}
-
-
-/* =========================================================
-   NOTICE
-========================================================= */
-
-function showNotice(
-  message
-){
-
-  const notice =
-    document.getElementById(
-      "notice"
-    );
-
-  notice.style.display =
-    "block";
-
-  notice.textContent =
-    message;
-
-
-  clearTimeout(
-    window.absNoticeTimer
-  );
-
-
-  window.absNoticeTimer =
-    setTimeout(
-      function(){
-
-        notice.style.display =
-          "none";
-
-      },
-      8000
-    );
 
 }
 
@@ -5159,10 +5748,12 @@ if(window.ethereum){
         connectedWallet =
           accounts[0];
 
+
         document.getElementById(
           "sellerWallet"
         ).value =
           connectedWallet;
+
 
         updateWalletButton(
           connectedWallet
@@ -5175,14 +5766,16 @@ if(window.ethereum){
         connectedWallet =
           "";
 
+
         document.getElementById(
           "sellerWallet"
         ).value =
           "";
 
+
         document.getElementById(
           "walletBtn"
-        ).textContent =
+        ).innerHTML =
           "Connect Wallet";
 
       }
@@ -5202,7 +5795,9 @@ if(window.ethereum){
             "publicCheckout"
           )
           .classList
-          .contains("show")
+          .contains(
+            "show"
+          )
       ){
 
         showNotice(
